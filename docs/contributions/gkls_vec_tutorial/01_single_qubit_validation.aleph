@@ -1,0 +1,44 @@
+/* ============================================================================
+   01_single_qubit_validation.aleph
+   ----------------------------------------------------------------------------
+   First executable validation script for the symbolic Liouville-space GKLS
+   tutorial.
+
+   This script checks that the reusable symbolic Liouville-space machinery
+   reproduces the direct GKLS equation on the smallest possible system: one
+   qubit.
+
+   It validates:
+
+     1. Population flow for the decay jump |0><1|.
+     2. Population flow for the pump jump |1><0|.
+     3. Dense-reference agreement for local dissipators.
+     4. Dense-reference agreement for coherent Hamiltonian terms.
+     5. Dense-reference agreement for a combined one-qubit GKLS model.
+     6. One-step trace preservation under symbolic Krylov propagation.
+
+   Dense calculations appear only inside liouville_validation.aleph and are used
+   as small-system reference checks. The symbolic production path itself remains
+   in liouville_core.aleph.
+   ============================================================================ */
+
+
+include "gkls_vec_tutorial/liouville_validation.aleph"
+
+
+print("")
+print("============================================================")
+print("Example 01: single-qubit symbolic Liouville validation")
+print("============================================================")
+print("")
+print("This script validates the symbolic GKLS / Liouville-space core")
+print("against direct dense GKLS calculations for N = 1.")
+print("")
+print("No dense Liouvillian matrix is constructed in the production path.")
+print("Dense density-matrix calculations are used only as reference tests.")
+print("")
+
+run_core_validation_suite()
+
+print("")
+print("Example 01 finished.")
