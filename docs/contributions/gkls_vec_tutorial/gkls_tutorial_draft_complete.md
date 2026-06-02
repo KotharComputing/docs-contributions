@@ -812,7 +812,7 @@ The trace error stays at the level of numerical precision, while the open-system
 
 The total $Z$ curve is the most direct signature of relaxation. The closed chain remains at zero throughout the run. The open chain rises monotonically and reaches approximately $7.98$ by the final time. Physically, this means that the sites initially in $|1\rangle$ are being pushed toward $|0\rangle$, increasing their local $Z$ expectation values.
 
-![Closed vs open staggered $Z$](gkls_vec_tutorial/stationary_chain_staggered_z_N10_Jz1_hz0.3_gamma0.2_dt0.05_steps160.png)
+![Closed vs open staggered $Z$](./figures/stationary_chain_staggered_z_N10_Jz1_hz0.3_gamma0.2_dt0.05_steps160.png)
 
 The staggered observable shows the decay of the initial alternating pattern. In the closed chain, the value stays pinned at $10$. In the open chain, it falls to approximately $2.02$. This is the same relaxation process seen from a different angle: as the odd sites move upward, the original Néel-like contrast is progressively erased.
 
