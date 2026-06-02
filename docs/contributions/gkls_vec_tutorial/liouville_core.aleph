@@ -35,7 +35,9 @@
 // ============================================================================
 // 1) Basic dimensions and doubled-lattice bookkeeping
 // ============================================================================
-
+/**
+* convert site index to the corresponding forward site of the doubled lattice.
+*/
 def fwd(integer site) { return site }
 
 def bwd(integer site, integer N) { return N + site }
