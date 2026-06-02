@@ -816,7 +816,7 @@ The total $Z$ curve is the most direct signature of relaxation. The closed chain
 
 The staggered observable shows the decay of the initial alternating pattern. In the closed chain, the value stays pinned at $10$. In the open chain, it falls to approximately $2.02$. This is the same relaxation process seen from a different angle: as the odd sites move upward, the original Néel-like contrast is progressively erased.
 
-![Final $Z$ profile at $t=8$](gkls_vec_tutorial/stationary_chain_final_profile_N10_Jz1_hz0.3_gamma0.2_dt0.05_steps160.png)
+![Final $Z$ profile at $t=8$](./figures/stationary_chain_final_profile_N10_Jz1_hz0.3_gamma0.2_dt0.05_steps160.png)
 
 The final site-resolved profile makes the mechanism especially clear. The closed profile is still the original alternating pattern. In the open profile, the even sites remain close to $+1$, while the odd sites have moved from $-1$ to roughly $0.6$. The system has not fully reached the all $|0\rangle$ configuration yet, but the direction of the relaxation is already unmistakable.
 
