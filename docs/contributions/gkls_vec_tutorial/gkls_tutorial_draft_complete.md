@@ -242,7 +242,7 @@ def make_empty_liouvillian() {
 }
 ```
 
-The function `rho_vec_index(row, col, d)` is where the row-stacking convention appears in code. Altough it looks like a small indexing detail, it is one of the most important choices in the whole implementation. Once the convention is chosen, every left and right action in the Liouvillian has to respect it.
+The function `rho_vec_index(row, col, d)` is where the row-stacking convention appears in code. Although it looks like a small indexing detail, it is one of the most important choices in the whole implementation. Once the convention is chosen, every left and right action in the Liouvillian has to respect it.
 
 ### Row-stacking helpers
 
