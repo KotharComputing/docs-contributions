@@ -808,7 +808,7 @@ staggered Z open   at T   = 2.01896517994662
 
 The trace error stays at the level of numerical precision, while the open-system observables change substantially. This is exactly the combination we want: nontrivial dissipative dynamics without loss of probability.
 
-![Closed vs open total $Z$](gkls_vec_tutorial/stationary_chain_total_z_N10_Jz1_hz0.3_gamma0.2_dt0.05_steps160.png)
+![Closed vs open total $Z$](./figures/stationary_chain_total_z_N10_Jz1_hz0.3_gamma0.2_dt0.05_steps160.png)
 
 The total $Z$ curve is the most direct signature of relaxation. The closed chain remains at zero throughout the run. The open chain rises monotonically and reaches approximately $7.98$ by the final time. Physically, this means that the sites initially in $|1\rangle$ are being pushed toward $|0\rangle$, increasing their local $Z$ expectation values.
 
