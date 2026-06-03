@@ -50,6 +50,9 @@ def bwd(integer site, integer N) { return N + site }
  */
 def hilbert_dim(integer N) { return 2**N }
 
+/**
+* Size of the vector space of density matrices.
+*/
 def liouville_dim(integer N) { return 4**N }
 
 def rho_vec_index(integer row, integer col, integer d) { return row * d + col }
