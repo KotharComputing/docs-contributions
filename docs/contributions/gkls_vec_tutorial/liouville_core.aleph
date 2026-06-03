@@ -55,6 +55,9 @@ def hilbert_dim(integer N) { return 2**N }
 */
 def liouville_dim(integer N) { return 4**N }
 
+/**
+* convert a matrix element position to a row-stacked vector element position.
+*/
 def rho_vec_index(integer row, integer col, integer d) { return row * d + col }
 
 def make_empty_liouvillian() { return operator_sum() }
