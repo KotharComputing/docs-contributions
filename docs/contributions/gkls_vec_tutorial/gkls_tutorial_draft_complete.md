@@ -820,7 +820,7 @@ The staggered observable shows the decay of the initial alternating pattern. In 
 
 The final site-resolved profile makes the mechanism especially clear. The closed profile is still the original alternating pattern. In the open profile, the even sites remain close to $+1$, while the odd sites have moved from $-1$ to roughly $0.6$. The system has not fully reached the all $|0\rangle$ configuration yet, but the direction of the relaxation is already unmistakable.
 
-![Trace preservation](gkls_vec_tutorial/stationary_chain_trace_N10_Jz1_hz0.3_gamma0.2_dt0.05_steps160.png)
+![Trace preservation](./figures/stationary_chain_trace_N10_Jz1_hz0.3_gamma0.2_dt0.05_steps160.png)
 
 Finally, the trace plot is the numerical sanity check. Both the closed and open evolutions preserve $\mathrm{Tr}(\rho)=1$ throughout the run. For the open chain, the maximum deviation is about $3.2\times 10^{-14}$, which is consistent with floating-point error.
 
