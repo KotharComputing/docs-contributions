@@ -40,6 +40,9 @@
 */
 def fwd(integer site) { return site }
 
+/**
+* convert site index to the corresponding backward site of the doubled lattice.
+*/
 def bwd(integer site, integer N) { return N + site }
  
 def hilbert_dim(integer N) { return 2**N }
