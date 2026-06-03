@@ -60,6 +60,9 @@ def liouville_dim(integer N) { return 4**N }
 */
 def rho_vec_index(integer row, integer col, integer d) { return row * d + col }
 
+/**
+* context specialized factory to initialize an empty liouvillian. 
+*/
 def make_empty_liouvillian() { return operator_sum() }
 
 
