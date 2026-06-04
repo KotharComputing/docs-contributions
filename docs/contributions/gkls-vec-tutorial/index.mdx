@@ -58,9 +58,9 @@ This trace-preserving property will be one of our basic checks when we validate 
 
 GKLS is not an ad hoc model; it is the canonical form that arises when a microscopic system–environment description is reduced under standard conditions. In broad terms, it applies when:
 
-- The coupling to the environment is **weak** (perturbative);
-- The system and bath remain approximately **separable** (Born approximation);
-- Bath correlations decay quickly so the dynamics is effectively **memoryless** (Markov approximation);
+- The system-environment coupling is weak enough for a perturbative treatment;
+- The bath can still be treated as an external environment, rather than as a fully dynamical part of the system we keep explicitly;
+- Bath correlations decay quickly, so the dynamics is effectively **memoryless** (Markov approximation);
 - Rapidly oscillating terms can be neglected due to timescale separation (**secular / rotating-wave** approximation).
 
 Under these assumptions, the reduced evolution is completely positive and trace preserving, which is precisely why the GKLS structure is so widely used.
@@ -109,7 +109,7 @@ $$
 where $B^{\mathsf T}$ is the transpose of $B$. This is the identity that turns left–right multiplication into a single linear action on the vectorized state.
 
 :::note
-The choice of row-stacking is not physically special. What matters is using one convention consistently. The validation files check that the symbolic Liouville-space action agrees with the direct dense GKLS equation under this convention.
+The choice of row-stacking is not physically or mathematically special. It is a choice of basis for the \(d^2\)-dimensional vector space of operators. What matters is using one convention consistently. In practice, this choice can still have numerical consequences, especially when one later compares different sparse or structured representations. The validation files check that the symbolic Liouville-space action agrees with the direct dense GKLS equation under the convention used here.
 :::
 
 ### From GKLS to the Liouvillian
@@ -120,7 +120,7 @@ $$
 \frac{d}{dt}|\rho(t)\rangle\rangle=\mathcal{L}\,|\rho(t)\rangle\rangle,
 $$
 
-where $\mathcal{L}$ is the **Liouvillian (Lindbladian superoperator)** (a $d^2\times d^2$ matrix). In the row-stacking convention used here, $\mathcal{L}$ can be written explicitly in terms of Kronecker products of $H$ and the jump operators $L_k$ as
+where $\mathcal{L}$ is the generator of the vectorized GKLS dynamics. In this tutorial, I will often call this full generator the **Liouvillian**, since it is the object generating time evolution in Liouville space. Equivalently, one may call the full GKLS generator the **Lindbladian**, especially when emphasizing the dissipative terms. When needed, I will refer to the purely Hamiltonian contribution as the coherent or Hamiltonian part of the generator.
 
 $$
 \mathcal{L}
