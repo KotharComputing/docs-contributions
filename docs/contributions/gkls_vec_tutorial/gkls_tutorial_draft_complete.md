@@ -9,6 +9,17 @@ tags:
     - "Quantum master equations"
     - "Lindblad equations"
 ---
+---
+date: 2026-06-03
+authors:
+    - name: Carlos Ribeiro,
+      title: AFFILIATION,
+      email: UNIVERSITY EMAIL.
+tags:
+    - "Open quantum systems & decoherence"
+    - "Quantum master equations"
+    - "Lindblad equations"
+---
 # Lindblad Master Equations: from GKLS to Liouville Space and Krylov Propagation
 
 Perfect isolation is the exception, not the rule. In practice, quantum devices and many-body platforms are subject to weak measurement back-action, uncontrolled noise, finite-temperature baths, and (when we are ambitious) **engineered dissipation** as a tool rather than a nuisance. When the environment “forgets” rapidly compared to the system’s intrinsic timescales (the **Markovian regime**), the reduced dynamics of the system can often be captured by the **Gorini–Kossakowski–Sudarshan–Lindblad (GKLS)** master equation. In this tutorial, we will use GKLS dynamics as a concrete way to introduce a useful computational idea: instead of evolving the density matrix as a matrix-valued object, we rewrite the problem as a linear evolution in **Liouville space**.
