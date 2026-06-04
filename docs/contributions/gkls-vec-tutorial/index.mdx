@@ -1,25 +1,17 @@
 ---
-date: 2026-06-03
+
+date: 2026-06-04
 authors:
-    - name: Carlos Ribeiro,
-      title: AFFILIATION,
-      email: UNIVERSITY EMAIL.
+    - name: "Carlos Ribeiro"
+      title: "Master's student in Physics, Federal University of Paraíba"
+      email: "carlos.ribeiro@academico.ufpb.br"
 tags:
     - "Open quantum systems & decoherence"
     - "Quantum master equations"
     - "Lindblad equations"
+
 ---
----
-date: 2026-06-03
-authors:
-    - name: Carlos Ribeiro,
-      title: AFFILIATION,
-      email: UNIVERSITY EMAIL.
-tags:
-    - "Open quantum systems & decoherence"
-    - "Quantum master equations"
-    - "Lindblad equations"
----
+
 # Lindblad Master Equations: from GKLS to Liouville Space and Krylov Propagation
 
 Perfect isolation is the exception, not the rule. In practice, quantum devices and many-body platforms are subject to weak measurement back-action, uncontrolled noise, finite-temperature baths, and (when we are ambitious) **engineered dissipation** as a tool rather than a nuisance. When the environment “forgets” rapidly compared to the system’s intrinsic timescales (the **Markovian regime**), the reduced dynamics of the system can often be captured by the **Gorini–Kossakowski–Sudarshan–Lindblad (GKLS)** master equation. In this tutorial, we will use GKLS dynamics as a concrete way to introduce a useful computational idea: instead of evolving the density matrix as a matrix-valued object, we rewrite the problem as a linear evolution in **Liouville space**.
@@ -187,11 +179,11 @@ For that reason, the code is organized in layers. The reusable machinery lives i
 
 The main files used in this tutorial are:
 
-- [`liouville_core.aleph`](https://github.com/carlos-rib/gkls-liouville-krylov-aleph/blob/main/gkls_vec_tutorial/liouville_core.aleph)
-- [`liouville_validation.aleph`](https://github.com/carlos-rib/gkls-liouville-krylov-aleph/blob/main/gkls_vec_tutorial/liouville_validation.aleph)
-- [`01_single_qubit_validation.aleph`](https://github.com/carlos-rib/gkls-liouville-krylov-aleph/blob/main/gkls_vec_tutorial/01_single_qubit_validation.aleph)
-- [`02_single_qubit_krylov_evolution.aleph`](https://github.com/carlos-rib/gkls-liouville-krylov-aleph/blob/main/gkls_vec_tutorial/02_single_qubit_krylov_evolution.aleph)
-- [`03_stationary_closed_chain_open_dynamics.aleph`](https://github.com/carlos-rib/gkls-liouville-krylov-aleph/blob/main/gkls_vec_tutorial/03_stationary_closed_chain_open_dynamics.aleph)
+- [`liouville-core.aleph`](./liouville-core.aleph)
+- [`liouville-validation.aleph`](./liouville-validation.aleph)
+- [`01-single-qubit-validation.aleph`](./01-single-qubit-validation.aleph)
+- [`02-single-qubit-krylov-evolution.aleph`](./02-single-qubit-krylov-evolution.aleph)
+- [`03-stationary-closed-chain-open-dynamics.aleph`](./03-stationary-closed-chain-open-dynamics.aleph)
 
 The idea here is simple: first build and validate the Liouville-space machinery on small systems, then use the same machinery in the propagation examples.
 
@@ -201,7 +193,7 @@ The snippets shown in the tutorial are intentionally selective. They are meant t
 
 ### The code layout
 
-The implementation is centered around `liouville_core.aleph`.
+The implementation is centered around `liouville-core.aleph`.
 
 This file contains the reusable pieces:
 
@@ -216,8 +208,8 @@ This file contains the reusable pieces:
 The validation layer is kept separate:
 
 ```text
-liouville_validation.aleph
-01_single_qubit_validation.aleph
+liouville-validation.aleph
+01-single-qubit-validation.aleph
 ```
 
 The role of these files is not to be large or physically impressive, but only make sure the convention is correct before we trust the many-body examples. They do that by comparing the symbolic Liouville-space construction against direct dense GKLS calculations in one-qubit cases.
@@ -390,8 +382,8 @@ The validation step below checks that these symbolic dissipators reproduce the d
 
 At this point, the implementation has three separate responsibilities:
 
-1. `liouville_core.aleph` defines the reusable Liouville-space machinery.
-2. `liouville_validation.aleph` checks the convention against direct dense GKLS calculations.
+1. `liouville-core.aleph` defines the reusable Liouville-space machinery.
+2. `liouville-validation.aleph` checks the convention against direct dense GKLS calculations.
 3. The example files use the validated machinery for actual propagation.
 
 This is the structure we will follow in the rest of the tutorial. We will first validate the construction in the simplest possible setting, and only then move to Krylov propagation and many-body dynamics.
@@ -416,11 +408,11 @@ The dense calculation is used only as a small-system reference. It is not the pr
 The validation code is split into two files:
 
 ```text
-liouville_validation.aleph
-01_single_qubit_validation.aleph
+liouville-validation.aleph
+01-single-qubit-validation.aleph
 ```
 
-The file `liouville_validation.aleph` contains the reference checks. For example, the direct dense GKLS right-hand side is implemented as
+The file `liouville-validation.aleph` contains the reference checks. For example, the direct dense GKLS right-hand side is implemented as
 
 ```aleph
 def direct_gkls_rhs(rho, H, jump_ops, gammas)
@@ -471,10 +463,10 @@ def compare_direct_and_symbolic_rhs(
 }
 ```
 
-The executable file `01_single_qubit_validation.aleph` simply runs the compact validation suite:
+The executable file `01-single-qubit-validation.aleph` simply runs the compact validation suite:
 
 ```aleph
-include "gkls_vec_tutorial/liouville_validation.aleph"
+include "gkls-vec-tutorial/liouville-validation.aleph"
 
 print("")
 print("============================================================")
@@ -519,7 +511,7 @@ It describes a single driven dissipative qubit with $H=\omega X$ and a relaxatio
 
 The purpose of this example is not system size. It is to show the whole workflow in the cleanest possible setting: build the symbolic Liouvillian, construct the Krylov propagator, evolve the vectorized density matrix, and monitor simple physical observables.
 
-The symbolic Liouvillian is assembled directly from the validated helpers in `liouville_core.aleph`:
+The symbolic Liouvillian is assembled directly from the validated helpers in `liouville-core.aleph`:
 
 ```aleph
 var Liouv = make_empty_liouvillian()
@@ -608,11 +600,11 @@ Physically, the Hamiltonian drives coherent oscillations between $|0\rangle$ and
 
 The two figures generated by the script summarize this first propagation test.
 
-![Driven dissipative qubit populations](.figures/single_qubit_populations_omega1_gamma0.3_dt0.02_steps1000.png)
+![Driven dissipative qubit populations](./figures/single-qubit-populations-omega1-gamma0-3-dt0-02-steps1000.png)
 
 *Figure: Populations of the driven dissipative qubit. The Hamiltonian drive produces oscillations, while the relaxation channel damps the motion and transfers population toward the ground state.*
 
-![Driven dissipative qubit trace and Z expectation](./figures/single_qubit_trace_z_omega1_gamma0.3_dt0.02_steps1000.png)
+![Driven dissipative qubit trace and Z expectation](./figures/single-qubit-trace-z-omega1-gamma0-3-dt0-02-steps1000.png)
 
 *Figure: Trace and $\langle Z\rangle$ during the same evolution. The trace remaining close to 1 is a basic diagnostic that the open-system propagation is behaving consistently.*
 
@@ -830,11 +822,12 @@ staggered Z open   at T   = 2.01896517994662
 
 The trace error stays at the level of numerical precision, while the open-system observables change substantially. This is exactly the combination we want: nontrivial dissipative dynamics without loss of probability.
 
-![Closed vs open total $Z$](./figures/stationary_chain_total_z_N10_Jz1_hz0.3_gamma0.2_dt0.05_steps160.png)
+![Closed vs open total $Z$](./figures/stationary-chain-total-z-n10-jz1-hz0-3-gamma0-2-dt0-05-steps160.png)
 
 The total $Z$ curve is the most direct signature of relaxation. The closed chain remains at zero throughout the run. The open chain rises monotonically and reaches approximately $7.98$ by the final time. Physically, this means that the sites initially in $|1\rangle$ are being pushed toward $|0\rangle$, increasing their local $Z$ expectation values.
 
-![Closed vs open staggered $Z$](./figures/stationary_chain_staggered_z_N10_Jz1_hz0.3_gamma0.2_dt0.05_steps160.png)
+![Closed vs open staggered $Z$](./figures/stationary-chain-staggered-z-n10-jz1-hz0-3-gamma0-2-dt0-05-steps160.png)
+
 
 The staggered observable shows the decay of the initial alternating pattern. In the closed chain, the value stays pinned at $10$. In the open chain, it falls to approximately $2.02$. This is the same relaxation process seen from a different angle: as the odd sites move upward, the original Néel-like contrast is progressively erased.
 
@@ -842,7 +835,7 @@ The staggered observable shows the decay of the initial alternating pattern. In 
 
 The final site-resolved profile makes the mechanism especially clear. The closed profile is still the original alternating pattern. In the open profile, the even sites remain close to $+1$, while the odd sites have moved from $-1$ to roughly $0.6$. The system has not fully reached the all $|0\rangle$ configuration yet, but the direction of the relaxation is already unmistakable.
 
-![Trace preservation](./figures/stationary_chain_trace_N10_Jz1_hz0.3_gamma0.2_dt0.05_steps160.png)
+![Trace preservation](./figures/stationary-chain-trace-n10-jz1-hz0-3-gamma0-2-dt0-05-steps160.png)
 
 Finally, the trace plot is the numerical sanity check. Both the closed and open evolutions preserve $\mathrm{Tr}(\rho)=1$ throughout the run. For the open chain, the maximum deviation is about $3.2\times 10^{-14}$, which is consistent with floating-point error.
 

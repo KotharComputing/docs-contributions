@@ -42,7 +42,7 @@
    ============================================================================ */
 
 
-include "gkls_vec_tutorial/liouville_core.aleph"
+include "gkls-vec-tutorial/liouville-core.aleph"
 
 
 // ============================================================================
@@ -368,7 +368,7 @@ fig_total.title("Stationary closed chain vs open dynamics: total $Z$")
         "name_text_style": ["font_size": 16]
     ])
     .legend(["top": "bottom", "left": "right"])
-    .save("gkls_vec_tutorial/stationary_chain_total_z_${label}")
+    .save("gkls-vec-tutorial/stationary_chain_total_z_${label}")
 
 
 /*
@@ -392,7 +392,7 @@ fig_stag.title("Stationary closed chain vs open dynamics: staggered $Z$")
         "name_text_style": ["font_size": 16]
     ])
     .legend(["top": "bottom", "left": "right"])
-    .save("gkls_vec_tutorial/stationary_chain_staggered_z_${label}")
+    .save("gkls-vec-tutorial/stationary_chain_staggered_z_${label}")
 
 
 /*
@@ -426,7 +426,7 @@ fig_profile.title("Final $Z$ profile at $t = ${n_steps * dt}$")
         "name_text_style": ["font_size": 16]
     ])
     .legend(["top": "bottom", "left": "right"])
-    .save("gkls_vec_tutorial/stationary_chain_final_profile_${label}")
+    .save("gkls-vec-tutorial/stationary_chain_final_profile_${label}")
 
 
 /*
@@ -448,13 +448,13 @@ fig_trace.title("Trace preservation")
         "name_text_style": ["font_size": 16]
     ])
     .legend(["top": "bottom", "left": "right"])
-    .save("gkls_vec_tutorial/stationary_chain_trace_${label}")
+    .save("gkls-vec-tutorial/stationary_chain_trace_${label}")
 
 
 print("Figures saved:")
-print("  gkls_vec_tutorial/stationary_chain_total_z_${label}.figure")
-print("  gkls_vec_tutorial/stationary_chain_staggered_z_${label}.figure")
-print("  gkls_vec_tutorial/stationary_chain_final_profile_${label}.figure")
-print("  gkls_vec_tutorial/stationary_chain_trace_${label}.figure")
+print("  gkls-vec-tutorial/stationary_chain_total_z_${label}.figure")
+print("  gkls-vec-tutorial/stationary_chain_staggered_z_${label}.figure")
+print("  gkls-vec-tutorial/stationary_chain_final_profile_${label}.figure")
+print("  gkls-vec-tutorial/stationary_chain_trace_${label}.figure")
 print("")
 print("Example 03 finished.")

@@ -30,7 +30,7 @@
    ============================================================================ */
 
 
-include "gkls_vec_tutorial/liouville_core.aleph"
+include "gkls-vec-tutorial/liouville-core.aleph"
 
 
 // ============================================================================
@@ -229,7 +229,7 @@ fig_pop.title("Driven dissipative qubit: populations")
         "name_text_style": ["font_size": 16]
     ])
     .legend(["top": "bottom", "left": "right"])
-    .save("gkls_vec_tutorial/single_qubit_populations_${label}")
+    .save("gkls-vec-tutorial/single_qubit_populations_${label}")
 
 
 /*
@@ -251,11 +251,11 @@ fig_obs.title("Driven dissipative qubit: trace and magnetization")
         "name_text_style": ["font_size": 16]
     ])
     .legend(["top": "bottom", "left": "right"])
-    .save("gkls_vec_tutorial/single_qubit_trace_z_${label}")
+    .save("gkls-vec-tutorial/single_qubit_trace_z_${label}")
 
 
 print("Figures saved:")
-print("  gkls_vec_tutorial/single_qubit_populations_${label}.figure")
-print("  gkls_vec_tutorial/single_qubit_trace_z_${label}.figure")
+print("  gkls-vec-tutorial/single_qubit_populations_${label}.figure")
+print("  gkls-vec-tutorial/single_qubit_trace_z_${label}.figure")
 print("")
 print("Example 02 finished.")

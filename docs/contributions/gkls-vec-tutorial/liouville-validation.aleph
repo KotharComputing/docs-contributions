@@ -1,5 +1,5 @@
 /* ============================================================================
-   liouville_validation.aleph
+   liouville-validation.aleph
    ----------------------------------------------------------------------------
    Small-system validation helpers for symbolic Liouville-space GKLS dynamics.
 
@@ -22,13 +22,13 @@
        2. Symbolic Liouville-space action:
               d|rho>>/dt = Liouv |rho>>
 
-   The comparison uses the row-stacking convention from liouville_core.aleph:
+   The comparison uses the row-stacking convention from liouville-core.aleph:
 
        vec_row(rho)[row * d + col] = rho[row, col].
    ============================================================================ */
 
 
-include "gkls_vec_tutorial/liouville_core.aleph"
+include "gkls-vec-tutorial/liouville-core.aleph"
 
 
 // ============================================================================

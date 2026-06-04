@@ -1,5 +1,5 @@
 /* ============================================================================
-   01_single_qubit_validation.aleph
+   01-single-qubit-validation.aleph
    ----------------------------------------------------------------------------
    First executable validation script for the symbolic Liouville-space GKLS
    tutorial.
@@ -17,13 +17,13 @@
      5. Dense-reference agreement for a combined one-qubit GKLS model.
      6. One-step trace preservation under symbolic Krylov propagation.
 
-   Dense calculations appear only inside liouville_validation.aleph and are used
+   Dense calculations appear only inside liouville-validation.aleph and are used
    as small-system reference checks. The symbolic production path itself remains
-   in liouville_core.aleph.
+   in liouville-core.aleph.
    ============================================================================ */
 
 
-include "gkls_vec_tutorial/liouville_validation.aleph"
+include "gkls-vec-tutorial/liouville-validation.aleph"
 
 
 print("")
