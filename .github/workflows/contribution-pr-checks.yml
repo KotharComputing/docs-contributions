@@ -91,7 +91,6 @@ jobs:
   build-docusaurus:
     name: Build Docusaurus Site
     runs-on: ubuntu-latest
-    needs: external-change-scope
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
