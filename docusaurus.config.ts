@@ -1,6 +1,7 @@
 import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+import type * as OpenApiPlugin from 'docusaurus-plugin-openapi-docs';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { remarkAutolinker } from '@kasisoft/remark-autolinker';
@@ -138,7 +139,31 @@ const config: Config = {
     },
   ],
 
-  plugins: [],
+  plugins: [
+     [
+      'docusaurus-plugin-openapi-docs',
+      {
+        id: 'api',
+        docsPluginId: 'api',
+        config: {
+          api: {
+            specPath: 'https://api.kotharcomputing.com/openapi.json',
+            outputDir: 'api',
+            sidebarOptions: {
+              groupPathsBy: 'tag',
+            },
+          } satisfies OpenApiPlugin.Options,
+          alephLanguageServer: {
+            specPath: 'https://aleph.kotharcomputing.com/openapi.json',
+            outputDir: 'api/aleph-language-server',
+            sidebarOptions: {
+              groupPathsBy: 'tag',
+            },
+          } satisfies OpenApiPlugin.Options,
+        },
+      },
+    ],
+  ],
 };
 
 export default config;

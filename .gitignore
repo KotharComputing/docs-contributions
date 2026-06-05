@@ -7,6 +7,8 @@
 # Generated files
 .docusaurus
 .cache-loader
+/api/
+/static/
 
 # Misc
 .DS_Store
@@ -18,6 +20,26 @@
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-.env
 
-*.json
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.sublime-project
+.sublime-workspace
+
+# Logs and runtime
+*.log
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Temporary files
+*.tmp
+*.bak
+.temp/
+dist/
+coverage/
