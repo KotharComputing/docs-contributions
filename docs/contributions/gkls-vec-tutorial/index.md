@@ -3,9 +3,9 @@
 date: 2026-06-04
 authors:
     - Carlos Ribeiro <carlos.ribeiro@academico.ufpb.br>, Master's student in Physics at Federal University of Paraíba
-#     - name: "Carlos Ribeiro"
-#      title: "Master's student in Physics, Federal University of Paraíba"
-#      email: "carlos.ribeiro@academico.ufpb.br"
+    # - name: "Carlos Ribeiro",
+    #  title: "Master's student in Physics, Federal University of Paraíba",
+    #  email: "carlos.ribeiro@academico.ufpb.br"
 tags:
     - "Open quantum systems & decoherence"
     - "Quantum master equations"
