@@ -1,7 +1,6 @@
 import { themes as prismThemes } from 'prism-react-renderer';
 import type { Config } from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
-import type * as OpenApiPlugin from 'docusaurus-plugin-openapi-docs';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { remarkAutolinker } from '@kasisoft/remark-autolinker';
@@ -68,8 +67,11 @@ const config: Config = {
     [
       'classic',
       {
+        blog: false,
         docs: {
           sidebarPath: './sidebars.ts',
+          tags: 'tags.yml',
+          onInlineTags: 'throw',
           sidebarItemsGenerator: async (args) => {
             const items = await args.defaultSidebarItemsGenerator(args);
             return decodeSidebarItems(items);
@@ -85,7 +87,7 @@ const config: Config = {
               },
             ],
           ],
-          rehypePlugins: [rehypeKatex],
+          rehypePlugins: [[rehypeKatex, { strict: 'error' }]],
         },
         theme: {
           customCss: './src/css/custom.css',
@@ -95,6 +97,13 @@ const config: Config = {
   ],
 
   themeConfig: {
+    zoom: {
+      selector: '.markdown img',
+      background: {
+        light: 'rgba(255, 255, 255, 0.9)',
+        dark: 'rgba(4, 11, 20, 0.9)',
+      },
+    },
     colorMode: {
       defaultMode: 'dark',
       disableSwitch: true,
@@ -140,29 +149,32 @@ const config: Config = {
   ],
 
   plugins: [
-     [
-      'docusaurus-plugin-openapi-docs',
-      {
-        id: 'api',
-        docsPluginId: 'api',
-        config: {
-          api: {
-            specPath: 'https://api.kotharcomputing.com/openapi.json',
-            outputDir: 'api',
-            sidebarOptions: {
-              groupPathsBy: 'tag',
+    'docusaurus-lunr-search',
+    'docusaurus-plugin-image-zoom',
+    function figureAssetsPlugin() {
+      return {
+        name: 'figure-assets-plugin',
+        configureWebpack() {
+          return {
+            module: {
+              rules: [
+                {
+                  test: /\.figure$/i,
+                  use: [
+                    {
+                      loader: require.resolve('file-loader'),
+                      options: {
+                        name: 'assets/figures/[name]-[contenthash].[ext]',
+                      },
+                    },
+                  ],
+                },
+              ],
             },
-          } satisfies OpenApiPlugin.Options,
-          alephLanguageServer: {
-            specPath: 'https://aleph.kotharcomputing.com/openapi.json',
-            outputDir: 'api/aleph-language-server',
-            sidebarOptions: {
-              groupPathsBy: 'tag',
-            },
-          } satisfies OpenApiPlugin.Options,
+          };
         },
-      },
-    ],
+      };
+    },
   ],
 };
 
