@@ -1,3 +1,9 @@
+---
+
+sidebar_position: 1
+
+---
+
 # Contributions
 
 The Contributions section is for **community-created content**. Anyone can submit tutorials, concepts, guides, or deep dives related to Kothar and Aleph. You do not need to be a Kothar employee — if you have experience, insights, or ideas, your work can become part of the official docs.

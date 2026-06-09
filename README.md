@@ -52,6 +52,17 @@ If you are new to Docusaurus, start with the official docs: https://docusaurus.i
 
 The site will be available at http://localhost:3000/ by default.
 
+## Dev Container / Codespaces
+
+You can also open this repository in a VS Code Dev Container or GitHub Codespaces. The container uses Node 24 LTS, installs dependencies automatically with `npm ci`, and starts the Docusaurus preview on port 3000 when the workspace opens.
+
+Before opening a pull request, still run the same validation checks used by CI:
+
+1. Typecheck the site:
+   `npm run typecheck`
+2. Build the site:
+   `npm run build`
+
 ## Repository Layout
 
 - `docs/contributions`: The only folder for external content.

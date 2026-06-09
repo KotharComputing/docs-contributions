@@ -1,0 +1,12 @@
+services:
+  docs:
+    image: mcr.microsoft.com/devcontainers/javascript-node:24-bookworm
+    init: true
+    user: node
+    working_dir: /workspaces/docs-contributions
+    command: sh -lc "npm ci && exec npm run start -- --host 0.0.0.0"
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    volumes:
+      - ..:/workspaces/docs-contributions:cached
