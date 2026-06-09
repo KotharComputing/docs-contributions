@@ -1,0 +1,460 @@
+/* ============================================================================
+   03_stationary_closed_chain_open_dynamics.aleph
+   ----------------------------------------------------------------------------
+   First many-body symbolic Liouville-space propagation example.
+
+   Purpose:
+       Show an open-system many-body evolution where the closed Hamiltonian
+       baseline is stationary.
+
+   Model:
+       H = Jz * sum_i Z_i Z_{i+1} + hz * sum_i Z_i
+
+   Initial state:
+       A computational-basis Neel-like product state.
+
+   Key point:
+       Since H is diagonal in the computational basis, the initial density
+       matrix rho(0) = |bitstring><bitstring| commutes with H.
+
+       Therefore, under the closed dynamics alone,
+
+           d rho / dt = -i[H, rho] = 0.
+
+       Any population dynamics observed after adding local decay channels comes
+       from the dissipator, not from the Hamiltonian.
+
+   Open channel:
+       Local decay to |0> on every site:
+
+           L_j = |0><1|_j.
+
+   Numerical method:
+       1. Build the Liouvillian symbolically on a doubled lattice.
+       2. Use symbolic non-Hermitian Krylov operator_function.
+       3. Propagate the vectorized density matrix directly.
+       4. Measure trace, total Z, staggered Z, and final Z profile.
+
+   This script deliberately does NOT:
+       - build a dense Liouvillian matrix;
+       - construct full 2^N x 2^N jump matrices;
+       - unvectorize rho inside the time loop.
+   ============================================================================ */
+
+
+include "gkls-vec-tutorial/liouville-core.aleph"
+
+
+// ============================================================================
+// 1) Parameters
+// ============================================================================
+
+global N          = get_arg("N",          as_integer, 10)
+global Jz         = get_arg("Jz",         as_real,    1.0)
+global hz         = get_arg("hz",         as_real,    0.3)
+global gamma      = get_arg("gamma",      as_real,    0.2)
+global dt         = get_arg("dt",         as_real,    0.02)
+global n_steps    = get_arg("n_steps",    as_integer, 300)
+global krylov_dim = get_arg("krylov_dim", as_integer, 20)
+
+global dim_vec = liouville_dim(N)
+global n_total = n_steps + 1
+
+
+print("")
+print("============================================================")
+print("Example 03: stationary closed chain vs open dynamics")
+print("============================================================")
+print("")
+print("Model:")
+print("  H = Jz * sum_i Z_i Z_{i+1} + hz * sum_i Z_i")
+print("  local jumps L_j = |0><1|_j")
+print("")
+print("Parameters:")
+print("  N          = " + N.string())
+print("  dim_vec    = 4^N = " + dim_vec.string())
+print("  Jz         = " + Jz.string())
+print("  hz         = " + hz.string())
+print("  gamma      = " + gamma.string())
+print("  dt         = " + dt.string())
+print("  n_steps    = " + n_steps.string())
+print("  krylov_dim = " + krylov_dim.string())
+print("")
+
+if (N > 10)
+{
+    print("WARNING:")
+    print("  This is exact Liouville-space propagation, so the vector size is 4^N.")
+    print("  N > 10 may become expensive depending on memory and Krylov dimension.")
+    print("")
+}
+
+
+// ============================================================================
+// 2) Initial product state
+// ============================================================================
+
+/*
+ * make_neel_like_basis_index(N)
+ *
+ * Builds the integer basis index for a product state with:
+ *
+ *     site even -> |0>
+ *     site odd  -> |1>
+ *
+ * Since Aleph site 0 is the least-significant bit, the basis index is:
+ *
+ *     index = sum_{odd sites j} 2^j.
+ */
+def make_neel_like_basis_index(integer n)
+{
+    var idx = 0
+
+    for (var j = 0; j < n; ++j)
+    {
+        if (j % 2 == 1)
+        {
+            idx += 2**j
+        }
+    }
+
+    return idx
+}
+
+
+var initial_basis_index = make_neel_like_basis_index(N)
+
+print("Initial state:")
+print("  Neel-like computational-basis state")
+print("  even sites -> |0>, odd sites -> |1>")
+print("  basis index = " + initial_basis_index.string())
+print("")
+
+var rho_init = make_basis_density_vec(N, initial_basis_index)
+
+
+// ============================================================================
+// 3) Build closed and open symbolic Liouvillians
+// ============================================================================
+
+/*
+ * Closed Liouvillian:
+ *
+ *     L_closed rho = -i[H, rho].
+ *
+ * Because rho_init is diagonal in the same basis as H, this should produce
+ * stationary dynamics for diagonal observables.
+ */
+print("Building closed symbolic Liouvillian...")
+
+var L_closed = diagonal_ising_coherent_liouvillian(N, Jz, hz)
+L_closed = cleanup_pauli_operator(L_closed, 1.0e-14)
+
+print("Closed Liouvillian built.")
+
+
+/*
+ * Open Liouvillian:
+ *
+ *     L_open = L_closed + sum_j gamma D[|0><1|_j].
+ *
+ * The dissipators are local symbolic operator_dense terms.
+ */
+print("Building open symbolic Liouvillian...")
+
+var L_open = diagonal_ising_coherent_liouvillian(N, Jz, hz)
+
+for (var j = 0; j < N; ++j)
+{
+    L_open += decay_to_zero_dissipator(N, j, gamma)
+}
+
+L_open = cleanup_mixed_operator(L_open, 1.0e-14)
+
+print("Open Liouvillian built.")
+
+
+// ============================================================================
+// 4) Build symbolic Krylov propagators
+// ============================================================================
+
+print("Building closed Krylov propagator...")
+
+var U_closed = make_liouville_expm(L_closed, dim_vec, dt, krylov_dim)
+
+print("Closed propagator ready.")
+
+
+print("Building open Krylov propagator...")
+
+var U_open = make_liouville_expm(L_open, dim_vec, dt, krylov_dim)
+
+print("Open propagator ready.")
+
+
+// ============================================================================
+// 5) Measurement bras
+// ============================================================================
+
+print("Preparing Liouville-space measurement vectors...")
+
+var trace_bra = make_trace_bra(N)
+var total_z_bra = make_total_z_observable_bra(N)
+var staggered_z_bra = make_staggered_z_observable_bra(N)
+
+var z_site_bras = []
+z_site_bras.reserve(N)
+
+for (var j = 0; j < N; ++j)
+{
+    z_site_bras.push_back(make_z_observable_bra(N, j))
+}
+
+print("Measurement vectors ready.")
+
+
+// ============================================================================
+// 6) Storage
+// ============================================================================
+
+var times = array(linspaced(n_total, 0.0, n_steps * dt), as_real)
+
+var trace_closed = zeros([n_total], as_array | as_real)
+var trace_open   = zeros([n_total], as_array | as_real)
+
+var total_z_closed = zeros([n_total], as_array | as_real)
+var total_z_open   = zeros([n_total], as_array | as_real)
+
+var stag_z_closed = zeros([n_total], as_array | as_real)
+var stag_z_open   = zeros([n_total], as_array | as_real)
+
+var final_profile_closed = zeros([N], as_array | as_real)
+var final_profile_open   = zeros([N], as_array | as_real)
+
+var sites = array(linspaced(N, 0, N - 1), as_real)
+
+
+// ============================================================================
+// 7) Time evolution
+// ============================================================================
+
+var rho_closed = rho_init + zeros_like(rho_init)
+var rho_open   = rho_init + zeros_like(rho_init)
+
+print("")
+print("Running closed and open symbolic Liouville evolution...")
+
+for (var step = 0; step < n_total; ++step)
+{
+    var tr_closed = real(dot(trace_bra, rho_closed))
+    var tr_open   = real(dot(trace_bra, rho_open))
+
+    var tz_closed = real(dot(total_z_bra, rho_closed))
+    var tz_open   = real(dot(total_z_bra, rho_open))
+
+    var sz_closed = real(dot(staggered_z_bra, rho_closed))
+    var sz_open   = real(dot(staggered_z_bra, rho_open))
+
+    trace_closed[step] = tr_closed
+    trace_open[step]   = tr_open
+
+    total_z_closed[step] = tz_closed
+    total_z_open[step]   = tz_open
+
+    stag_z_closed[step] = sz_closed
+    stag_z_open[step]   = sz_open
+
+    if (step == n_steps)
+    {
+        for (var j = 0; j < N; ++j)
+        {
+            final_profile_closed[j] = real(dot(z_site_bras[j], rho_closed))
+            final_profile_open[j]   = real(dot(z_site_bras[j], rho_open))
+        }
+    }
+
+    if (step % 50 == 0)
+{
+    var msg = "  step " + step.string() + "/" + n_steps.string()
+    msg += "   t = " + times[step].string()
+    msg += "   totalZ_closed = " + tz_closed.string()
+    msg += "   totalZ_open = " + tz_open.string()
+    msg += "   Tr_open = " + tr_open.string()
+
+    print(msg)
+}
+
+    if (step < n_steps)
+    {
+        rho_closed = apply_liouville_step(U_closed, rho_closed)
+        rho_open   = apply_liouville_step(U_open, rho_open)
+    }
+}
+
+print("Evolution done.")
+
+
+// ============================================================================
+// 8) Diagnostics
+// ============================================================================
+
+def max_abs_trace_error(trace_values, integer len)
+{
+    var max_err = 0.0
+
+    for (var i = 0; i < len; ++i)
+    {
+        var err = abs(trace_values[i] - 1.0)
+
+        if (err > max_err)
+        {
+            max_err = err
+        }
+    }
+
+    return max_err
+}
+
+
+var trace_err_closed = max_abs_trace_error(trace_closed, n_total)
+var trace_err_open   = max_abs_trace_error(trace_open, n_total)
+
+print("")
+print("Final diagnostics:")
+print("  max |Tr_closed - 1| = " + trace_err_closed.string())
+print("  max |Tr_open   - 1| = " + trace_err_open.string())
+print("")
+print("  total Z closed at t=0 = " + total_z_closed[0].string())
+print("  total Z closed at T   = " + total_z_closed[n_steps].string())
+print("  total Z open   at t=0 = " + total_z_open[0].string())
+print("  total Z open   at T   = " + total_z_open[n_steps].string())
+print("")
+print("  staggered Z closed at t=0 = " + stag_z_closed[0].string())
+print("  staggered Z closed at T   = " + stag_z_closed[n_steps].string())
+print("  staggered Z open   at t=0 = " + stag_z_open[0].string())
+print("  staggered Z open   at T   = " + stag_z_open[n_steps].string())
+
+
+// ============================================================================
+// 9) Figures
+// ============================================================================
+
+print("")
+print("Generating figures...")
+
+var label = "N${N}_Jz${Jz}_hz${hz}_gamma${gamma}_dt${dt}_steps${n_steps}"
+
+
+/*
+ * Figure 1: total Z.
+ *
+ * The closed curve should remain stationary.
+ * The open curve changes because local decay pushes sites toward |0>,
+ * for which Z = +1.
+ */
+var fig_total = Figure()
+fig_total.tooltip()
+fig_total.line(times, total_z_closed, ["name": "closed"])
+fig_total.line(times, total_z_open,   ["name": "open"])
+fig_total.title("Stationary closed chain vs open dynamics: total $Z$")
+    .x_axis([
+        "name": "Time t",
+        "name_location": "middle",
+        "name_text_style": ["font_size": 16]
+    ])
+    .y_axis([
+        "name": "$\\sum_i \\langle Z_i \\rangle$",
+        "name_location": "middle",
+        "name_text_style": ["font_size": 16]
+    ])
+    .legend(["top": "bottom", "left": "right"])
+    .save("gkls-vec-tutorial/stationary_chain_total_z_${label}")
+
+
+/*
+ * Figure 2: staggered Z.
+ *
+ * This highlights the relaxation of the Neel-like pattern.
+ */
+var fig_stag = Figure()
+fig_stag.tooltip()
+fig_stag.line(times, stag_z_closed, ["name": "closed"])
+fig_stag.line(times, stag_z_open,   ["name": "open"])
+fig_stag.title("Stationary closed chain vs open dynamics: staggered $Z$")
+    .x_axis([
+        "name": "Time t",
+        "name_location": "middle",
+        "name_text_style": ["font_size": 16]
+    ])
+    .y_axis([
+        "name": "$\\sum_i (-1)^i \\langle Z_i \\rangle$",
+        "name_location": "middle",
+        "name_text_style": ["font_size": 16]
+    ])
+    .legend(["top": "bottom", "left": "right"])
+    .save("gkls-vec-tutorial/stationary_chain_staggered_z_${label}")
+
+
+/*
+ * Figure 3: final Z profile.
+ *
+ * We slightly offset the x positions of the closed/open markers so that
+ * overlapping values remain visible. This is only for visualization.
+ */
+var profile_sites_closed = zeros([N], as_array | as_real)
+var profile_sites_open   = zeros([N], as_array | as_real)
+
+for (var j = 0; j < N; ++j)
+{
+    profile_sites_closed[j] = sites[j] - 0.04
+    profile_sites_open[j]   = sites[j] + 0.04
+}
+
+var fig_profile = Figure()
+fig_profile.tooltip()
+fig_profile.scatter(profile_sites_closed, final_profile_closed, ["name": "closed final"])
+fig_profile.scatter(profile_sites_open,   final_profile_open,   ["name": "open final"])
+fig_profile.title("Final $Z$ profile at $t = ${n_steps * dt}$")
+    .x_axis([
+        "name": "Site i",
+        "name_location": "middle",
+        "name_text_style": ["font_size": 16]
+    ])
+    .y_axis([
+        "name": "$\\langle Z_i \\rangle$",
+        "name_location": "middle",
+        "name_text_style": ["font_size": 16]
+    ])
+    .legend(["top": "bottom", "left": "right"])
+    .save("gkls-vec-tutorial/stationary_chain_final_profile_${label}")
+
+
+/*
+ * Figure 4: trace preservation.
+ */
+var fig_trace = Figure()
+fig_trace.tooltip()
+fig_trace.line(times, trace_closed, ["name": "closed trace"])
+fig_trace.line(times, trace_open,   ["name": "open trace"])
+fig_trace.title("Trace preservation")
+    .x_axis([
+        "name": "Time t",
+        "name_location": "middle",
+        "name_text_style": ["font_size": 16]
+    ])
+    .y_axis([
+        "name": "$\\mathrm{Tr}(\\rho)$",
+        "name_location": "middle",
+        "name_text_style": ["font_size": 16]
+    ])
+    .legend(["top": "bottom", "left": "right"])
+    .save("gkls-vec-tutorial/stationary_chain_trace_${label}")
+
+
+print("Figures saved:")
+print("  gkls-vec-tutorial/stationary_chain_total_z_${label}.figure")
+print("  gkls-vec-tutorial/stationary_chain_staggered_z_${label}.figure")
+print("  gkls-vec-tutorial/stationary_chain_final_profile_${label}.figure")
+print("  gkls-vec-tutorial/stationary_chain_trace_${label}.figure")
+print("")
+print("Example 03 finished.")

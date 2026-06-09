@@ -1,0 +1,261 @@
+/* ============================================================================
+   02_single_qubit_krylov_evolution.aleph
+   ----------------------------------------------------------------------------
+   First real symbolic Liouville-space propagation example.
+
+   Model:
+       H = omega * X
+
+       jump L = |0><1|
+
+   GKLS equation:
+       d rho / dt =
+           -i [H, rho]
+           + gamma * (
+                 L rho L^dag
+                 - 1/2 {L^dag L, rho}
+             )
+
+   Numerical method:
+       1. Build the Liouvillian symbolically on a doubled lattice.
+       2. Construct exp(dt * Liouvillian) using non-Hermitian Krylov
+          operator_function.
+       3. Propagate rho_vec directly in Liouville space.
+       4. Measure trace, <Z>, and populations without unvectorizing rho.
+
+   This script deliberately does NOT:
+       - build a dense Liouvillian matrix;
+       - call direct dense GKLS evolution;
+       - unvec rho inside the time loop.
+   ============================================================================ */
+
+
+include "gkls-vec-tutorial/liouville-core.aleph"
+
+
+// ============================================================================
+// 1) Parameters
+// ============================================================================
+
+global omega      = get_arg("omega",      as_real,    1.0)
+global gamma      = get_arg("gamma",      as_real,    0.3)
+global dt         = get_arg("dt",         as_real,    0.02)
+global n_steps    = get_arg("n_steps",    as_integer, 500)
+global krylov_dim = get_arg("krylov_dim", as_integer, 4)
+
+global N       = 1
+global dim_vec = liouville_dim(N)
+global n_total = n_steps + 1
+
+
+print("")
+print("============================================================")
+print("Example 02: single-qubit symbolic Krylov evolution")
+print("============================================================")
+print("")
+print("Model:")
+print("  H = omega * X")
+print("  L = |0><1|")
+print("")
+print("Parameters:")
+print("  omega      = " + omega.string())
+print("  gamma      = " + gamma.string())
+print("  dt         = " + dt.string())
+print("  n_steps    = " + n_steps.string())
+print("  krylov_dim = " + krylov_dim.string())
+print("")
+
+
+// ============================================================================
+// 2) Build symbolic Liouvillian
+// ============================================================================
+
+/*
+ * Coherent part:
+ *
+ *     -i[omega X, rho]
+ *
+ * Dissipative part:
+ *
+ *     gamma D[|0><1|](rho)
+ *
+ * Both pieces are symbolic doubled-lattice operators.
+ */
+print("Building symbolic Liouvillian...")
+
+var Liouv = make_empty_liouvillian()
+
+Liouv += coherent_x_term(N, 0, omega)
+Liouv += decay_to_zero_dissipator(N, 0, gamma)
+
+/*
+ * The Liouvillian contains local operator_dense terms from the dissipator, so
+ * we use the mixed cleanup path, not simplify_paulis.
+ */
+Liouv = cleanup_mixed_operator(Liouv, 1.0e-14)
+
+print("Symbolic Liouvillian built.")
+
+
+// ============================================================================
+// 3) Build symbolic Krylov propagator
+// ============================================================================
+
+print("Building symbolic Krylov propagator...")
+
+var U = make_liouville_expm(Liouv, dim_vec, dt, krylov_dim)
+
+print("Krylov propagator ready.")
+
+
+// ============================================================================
+// 4) Initial state and measurement bras
+// ============================================================================
+
+/*
+ * Initial state:
+ *
+ *     rho(0) = |1><1|
+ *
+ * In the two-level convention used here, the dissipator |0><1| relaxes this
+ * state toward |0><0|, while omega * X drives coherent oscillations.
+ */
+var rho_vec = make_basis_density_vec(N, 1)
+
+/*
+ * Measurement vectors.
+ *
+ * For one qubit:
+ *
+ *     p0 = (Tr rho + <Z>) / 2
+ *     p1 = (Tr rho - <Z>) / 2
+ *
+ * because Z|0> = +|0> and Z|1> = -|1>.
+ */
+var trace_bra = make_trace_bra(N)
+var z_bra = make_z_observable_bra(N, 0)
+
+
+// ============================================================================
+// 5) Storage
+// ============================================================================
+
+var times = array(linspaced(n_total, 0.0, n_steps * dt), as_real)
+
+var trace_values = zeros([n_total], as_array | as_real)
+var z_values     = zeros([n_total], as_array | as_real)
+var p0_values    = zeros([n_total], as_array | as_real)
+var p1_values    = zeros([n_total], as_array | as_real)
+
+
+// ============================================================================
+// 6) Time evolution loop
+// ============================================================================
+
+print("")
+print("Running symbolic Liouville-space evolution...")
+
+for (var step = 0; step < n_total; ++step)
+{
+    var tr = real(dot(trace_bra, rho_vec))
+    var z  = real(dot(z_bra, rho_vec))
+
+    trace_values[step] = tr
+    z_values[step] = z
+
+    p0_values[step] = 0.5 * (tr + z)
+    p1_values[step] = 0.5 * (tr - z)
+
+    if (step % 50 == 0)
+{
+    var msg = "  step " + step.string() + "/" + n_steps.string()
+    msg += "   t = " + times[step].string()
+    msg += "   Tr = " + tr.string()
+    msg += "   p0 = " + p0_values[step].string()
+    msg += "   p1 = " + p1_values[step].string()
+
+    print(msg)
+}
+    if (step < n_steps)
+    {
+        rho_vec = apply_liouville_step(U, rho_vec)
+    }
+}
+
+print("Evolution done.")
+
+
+// ============================================================================
+// 7) Basic final diagnostics
+// ============================================================================
+
+var final_trace = trace_values[n_steps]
+var final_p0 = p0_values[n_steps]
+var final_p1 = p1_values[n_steps]
+
+print("")
+print("Final diagnostics:")
+print("  Tr[rho(T)] = " + final_trace.string())
+print("  p0(T)      = " + final_p0.string())
+print("  p1(T)      = " + final_p1.string())
+print("  p0+p1      = " + (final_p0 + final_p1).string())
+
+
+// ============================================================================
+// 8) Figures
+// ============================================================================
+
+print("")
+print("Generating figures...")
+
+var label = "omega${omega}_gamma${gamma}_dt${dt}_steps${n_steps}"
+
+/*
+ * Figure 1: populations.
+ */
+var fig_pop = Figure()
+fig_pop.tooltip()
+fig_pop.line(times, p0_values, ["name": "p0 = <0|rho|0>"])
+fig_pop.line(times, p1_values, ["name": "p1 = <1|rho|1>"])
+fig_pop.title("Driven dissipative qubit: populations")
+    .x_axis([
+        "name": "Time t",
+        "name_location": "middle",
+        "name_text_style": ["font_size": 16]
+    ])
+    .y_axis([
+        "name": "Population",
+        "name_location": "middle",
+        "name_text_style": ["font_size": 16]
+    ])
+    .legend(["top": "bottom", "left": "right"])
+    .save("gkls-vec-tutorial/single_qubit_populations_${label}")
+
+
+/*
+ * Figure 2: trace and <Z>.
+ */
+var fig_obs = Figure()
+fig_obs.tooltip()
+fig_obs.line(times, trace_values, ["name": "Tr[rho]"])
+fig_obs.line(times, z_values, ["name": "<Z>"])
+fig_obs.title("Driven dissipative qubit: trace and magnetization")
+    .x_axis([
+        "name": "Time t",
+        "name_location": "middle",
+        "name_text_style": ["font_size": 16]
+    ])
+    .y_axis([
+        "name": "Observable",
+        "name_location": "middle",
+        "name_text_style": ["font_size": 16]
+    ])
+    .legend(["top": "bottom", "left": "right"])
+    .save("gkls-vec-tutorial/single_qubit_trace_z_${label}")
+
+
+print("Figures saved:")
+print("  gkls-vec-tutorial/single_qubit_populations_${label}.figure")
+print("  gkls-vec-tutorial/single_qubit_trace_z_${label}.figure")
+print("")
+print("Example 02 finished.")

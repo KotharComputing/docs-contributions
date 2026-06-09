@@ -1,0 +1,788 @@
+/* ============================================================================
+   liouville-validation.aleph
+   ----------------------------------------------------------------------------
+   Small-system validation helpers for symbolic Liouville-space GKLS dynamics.
+
+   This file is intended to be included by validation examples.
+
+   It deliberately contains dense density-matrix calculations, but only for
+   small correctness tests. These routines are NOT the production propagation
+   path of the tutorial.
+
+   Main purpose:
+     Compare two ways of computing d rho / dt:
+
+       1. Direct dense GKLS formula:
+              d rho / dt = -i[H,rho]
+                            + sum_k gamma_k (
+                                  L_k rho L_k^dag
+                                  - 1/2 {L_k^dag L_k, rho}
+                              )
+
+       2. Symbolic Liouville-space action:
+              d|rho>>/dt = Liouv |rho>>
+
+   The comparison uses the row-stacking convention from liouville-core.aleph:
+
+       vec_row(rho)[row * d + col] = rho[row, col].
+   ============================================================================ */
+
+
+include "gkls-vec-tutorial/liouville-core.aleph"
+
+
+// ============================================================================
+// 1) Small dense density matrices
+// ============================================================================
+
+/*
+ * make_basis_density_matrix(N, basis_index)
+ *
+ * Builds the dense matrix
+ *
+ *     rho = |basis_index><basis_index|
+ *
+ * for small validation tests.
+ */
+def make_basis_density_matrix(integer N, integer basis_index)
+{
+    var d = hilbert_dim(N)
+    var rho = zeros([d, d], as_matrix)
+
+    rho[basis_index, basis_index] = 1.0 + 0.0i
+
+    return rho
+}
+
+/*
+ * make_zero_hamiltonian(N)
+ *
+ * Dense zero Hamiltonian for tests where we only want to validate a dissipator.
+ */
+def make_zero_hamiltonian(integer N)
+{
+    var d = hilbert_dim(N)
+    return zeros([d, d], as_matrix)
+}
+
+/*
+ * make_single_qubit_x_matrix()
+ *
+ * Dense one-qubit Pauli X matrix.
+ *
+ * Aleph matrix literals are column-major. Since X is symmetric, the literal
+ * looks the same as the usual row-major display.
+ */
+def make_single_qubit_x_matrix()
+{
+    return matrix([[0, 1], [1, 0]], as_complex)
+}
+
+/*
+ * make_single_qubit_z_matrix()
+ *
+ * Dense one-qubit Pauli Z matrix.
+ */
+def make_single_qubit_z_matrix()
+{
+    return matrix([[1, 0], [0, -1]], as_complex)
+}
+
+
+// ============================================================================
+// 2) Direct dense GKLS right-hand side
+// ============================================================================
+
+/*
+ * direct_gkls_rhs(rho, H, jump_ops, gammas)
+ *
+ * Computes the GKLS right-hand side directly in dense density-matrix form:
+ *
+ *     d rho / dt =
+ *          -i [H, rho]
+ *          + sum_k gamma_k (
+ *                L_k rho L_k^dag
+ *                - 1/2 L_k^dag L_k rho
+ *                - 1/2 rho L_k^dag L_k
+ *            ).
+ *
+ * This is the dense reference implementation for validation only.
+ */
+def direct_gkls_rhs(rho, H, jump_ops, gammas)
+{
+    var drho = -1i * (H * rho - rho * H)
+
+    for (var k = 0; k < jump_ops.size(); ++k)
+    {
+        var jump = jump_ops[k]
+        var gamma = gammas[k]
+
+        var jump_dag = jump.adjointed()
+        var jump_dag_jump = jump_dag * jump
+
+        var jump_term = jump * rho * jump_dag
+        var left_anticomm = jump_dag_jump * rho
+        var right_anticomm = rho * jump_dag_jump
+
+        drho += gamma * jump_term
+        drho += (-0.5 * gamma) * left_anticomm
+        drho += (-0.5 * gamma) * right_anticomm
+    }
+
+    return drho
+}
+
+
+// ============================================================================
+// 3) Direct vs symbolic Liouville comparison
+// ============================================================================
+
+/*
+ * symbolic_rhs_from_density_matrix(Liouv, rho, d)
+ *
+ * Vectorizes rho using row-stacking and applies the symbolic Liouvillian.
+ */
+def symbolic_rhs_from_density_matrix(Liouv, rho, integer d)
+{
+    var rho_vec = vec_dm_row(rho, d)
+    return Liouv * rho_vec
+}
+
+/*
+ * compare_direct_and_symbolic_rhs(Liouv, rho, H, jump_ops, gammas, d)
+ *
+ * Compares:
+ *
+ *     vec_row(d rho / dt direct)
+ *
+ * against
+ *
+ *     Liouv * vec_row(rho).
+ *
+ * Returns the norm of the difference.
+ */
+def compare_direct_and_symbolic_rhs(
+    Liouv,
+    rho,
+    H,
+    jump_ops,
+    gammas,
+    integer d
+)
+{
+    var drho_direct = direct_gkls_rhs(rho, H, jump_ops, gammas)
+    var drho_direct_vec = vec_dm_row(drho_direct, d)
+
+    var drho_symbolic_vec = symbolic_rhs_from_density_matrix(Liouv, rho, d)
+
+    var err = norm(drho_direct_vec - drho_symbolic_vec)
+
+    return err
+}
+
+/*
+ * print_validation_result(label, err, tol)
+ *
+ * Standardized validation printout.
+ */
+def print_validation_result(string label, real err, real tol)
+{
+    print("")
+    print("=== " + label + " ===")
+    print("error     = " + err.string())
+    print("tolerance = " + tol.string())
+
+    if (err < tol)
+    {
+        print("PASS")
+    }
+    else
+    {
+        print("FAIL")
+    }
+}
+
+
+// ============================================================================
+// 4) Population-flow sanity checks
+// ============================================================================
+
+/*
+ * check_decay_to_zero_population_flow(gamma, tol)
+ *
+ * Symbolic-only dissipator sanity check for N = 1.
+ *
+ * We start from:
+ *
+ *     rho = |1><1|
+ *
+ * and apply the dissipator with jump:
+ *
+ *     L = |0><1|.
+ *
+ * We expect:
+ *
+ *     d rho_00 / dt > 0,
+ *     d rho_11 / dt < 0,
+ *     d Tr(rho) / dt = 0.
+ *
+ * This test does NOT construct a dense Liouvillian matrix.
+ */
+def check_decay_to_zero_population_flow(real gamma, real tol)
+{
+    var N = 1
+    var d = hilbert_dim(N)
+
+    var D = decay_to_zero_dissipator(N, 0, gamma)
+
+    // rho = |1><1|. In row-stacking, rho_11 is index 1*d + 1.
+    var rho_vec = make_basis_density_vec(N, 1)
+
+    var drho_vec = D * rho_vec
+
+    var idx_00 = rho_vec_index(0, 0, d)
+    var idx_11 = rho_vec_index(1, 1, d)
+
+    var drho_00 = real(drho_vec[idx_00])
+    var drho_11 = real(drho_vec[idx_11])
+
+    var trace_bra = make_trace_bra(N)
+    var dtrace = real(dot(trace_bra, drho_vec))
+
+    print("")
+    print("=== Population-flow check: decay_to_zero_dissipator ===")
+    print("d rho_00 / dt = " + drho_00.string())
+    print("d rho_11 / dt = " + drho_11.string())
+    print("d trace  / dt = " + dtrace.string())
+
+    var pass_pop_in = drho_00 > 0.0
+    var pass_pop_out = drho_11 < 0.0
+    var pass_trace = abs(dtrace) < tol
+
+    if (pass_pop_in)
+    {
+        print("PASS: d rho_00 / dt > 0")
+    }
+    else
+    {
+        print("FAIL: d rho_00 / dt should be > 0")
+    }
+
+    if (pass_pop_out)
+    {
+        print("PASS: d rho_11 / dt < 0")
+    }
+    else
+    {
+        print("FAIL: d rho_11 / dt should be < 0")
+    }
+
+    if (pass_trace)
+    {
+        print("PASS: trace is preserved to tolerance")
+    }
+    else
+    {
+        print("FAIL: trace derivative is not close to zero")
+    }
+
+    return pass_pop_in && pass_pop_out && pass_trace
+}
+
+/*
+ * check_pump_to_one_population_flow(gamma, tol)
+ *
+ * Symbolic-only dissipator sanity check for N = 1.
+ *
+ * We start from:
+ *
+ *     rho = |0><0|
+ *
+ * and apply the dissipator with jump:
+ *
+ *     L = |1><0|.
+ *
+ * We expect:
+ *
+ *     d rho_00 / dt < 0,
+ *     d rho_11 / dt > 0,
+ *     d Tr(rho) / dt = 0.
+ *
+ * This test does NOT construct a dense Liouvillian matrix.
+ */
+def check_pump_to_one_population_flow(real gamma, real tol)
+{
+    var N = 1
+    var d = hilbert_dim(N)
+
+    var D = pump_to_one_dissipator(N, 0, gamma)
+
+    // rho = |0><0|.
+    var rho_vec = make_basis_density_vec(N, 0)
+
+    var drho_vec = D * rho_vec
+
+    var idx_00 = rho_vec_index(0, 0, d)
+    var idx_11 = rho_vec_index(1, 1, d)
+
+    var drho_00 = real(drho_vec[idx_00])
+    var drho_11 = real(drho_vec[idx_11])
+
+    var trace_bra = make_trace_bra(N)
+    var dtrace = real(dot(trace_bra, drho_vec))
+
+    print("")
+    print("=== Population-flow check: pump_to_one_dissipator ===")
+    print("d rho_00 / dt = " + drho_00.string())
+    print("d rho_11 / dt = " + drho_11.string())
+    print("d trace  / dt = " + dtrace.string())
+
+    var pass_pop_out = drho_00 < 0.0
+    var pass_pop_in = drho_11 > 0.0
+    var pass_trace = abs(dtrace) < tol
+
+    if (pass_pop_out)
+    {
+        print("PASS: d rho_00 / dt < 0")
+    }
+    else
+    {
+        print("FAIL: d rho_00 / dt should be < 0")
+    }
+
+    if (pass_pop_in)
+    {
+        print("PASS: d rho_11 / dt > 0")
+    }
+    else
+    {
+        print("FAIL: d rho_11 / dt should be > 0")
+    }
+
+    if (pass_trace)
+    {
+        print("PASS: trace is preserved to tolerance")
+    }
+    else
+    {
+        print("FAIL: trace derivative is not close to zero")
+    }
+
+    return pass_pop_out && pass_pop_in && pass_trace
+}
+
+
+// ============================================================================
+// 5) Dense-reference validation tests for the core dissipators
+// ============================================================================
+
+/*
+ * validate_decay_to_zero_against_dense(gamma, tol)
+ *
+ * Compares the symbolic decay_to_zero_dissipator against the direct dense
+ * GKLS right-hand side for N = 1 and rho = |1><1|.
+ */
+def validate_decay_to_zero_against_dense(real gamma, real tol)
+{
+    var N = 1
+    var d = hilbert_dim(N)
+
+    var Liouv = decay_to_zero_dissipator(N, 0, gamma)
+
+    var rho = make_basis_density_matrix(N, 1)
+    var H = make_zero_hamiltonian(N)
+
+    var jump_ops = [ket0_bra1_matrix()]
+    var gammas = [gamma]
+
+    var err = compare_direct_and_symbolic_rhs(Liouv, rho, H, jump_ops, gammas, d)
+
+    print_validation_result("Dense reference: decay_to_zero_dissipator", err, tol)
+
+    return err
+}
+
+/*
+ * validate_pump_to_one_against_dense(gamma, tol)
+ *
+ * Compares the symbolic pump_to_one_dissipator against the direct dense
+ * GKLS right-hand side for N = 1 and rho = |0><0|.
+ */
+def validate_pump_to_one_against_dense(real gamma, real tol)
+{
+    var N = 1
+    var d = hilbert_dim(N)
+
+    var Liouv = pump_to_one_dissipator(N, 0, gamma)
+
+    var rho = make_basis_density_matrix(N, 0)
+    var H = make_zero_hamiltonian(N)
+
+    var jump_ops = [ket1_bra0_matrix()]
+    var gammas = [gamma]
+
+    var err = compare_direct_and_symbolic_rhs(Liouv, rho, H, jump_ops, gammas, d)
+
+    print_validation_result("Dense reference: pump_to_one_dissipator", err, tol)
+
+    return err
+}
+
+/*
+ * validate_z_dephasing_against_dense(gamma, tol)
+ *
+ * Compares the symbolic z_dephasing_dissipator against the direct dense
+ * GKLS right-hand side for N = 1 and a coherent test state.
+ */
+def validate_z_dephasing_against_dense(real gamma, real tol)
+{
+    var N = 1
+    var d = hilbert_dim(N)
+
+    var Liouv = z_dephasing_dissipator(N, 0, gamma)
+
+    // rho = |+><+| = 1/2 [[1, 1], [1, 1]]
+    // Aleph matrix literal is column-major; both columns are [1/2, 1/2]^T.
+    var rho = matrix([[0.5, 0.5], [0.5, 0.5]], as_complex)
+
+    var H = make_zero_hamiltonian(N)
+
+    var jump_ops = [pauli_z_matrix()]
+    var gammas = [gamma]
+
+    var err = compare_direct_and_symbolic_rhs(Liouv, rho, H, jump_ops, gammas, d)
+
+    print_validation_result("Dense reference: z_dephasing_dissipator", err, tol)
+
+    return err
+}
+
+// ============================================================================
+// 5b) Dense-reference validation tests for Pauli-expanded dissipators
+// ============================================================================
+
+/*
+ * validate_decay_to_zero_pauli_against_dense(gamma, tol)
+ *
+ * Compares the fully symbolic Pauli-expanded decay dissipator against the
+ * direct dense GKLS right-hand side for N = 1 and rho = |1><1|.
+ */
+def validate_decay_to_zero_pauli_against_dense(real gamma, real tol)
+{
+    var N = 1
+    var d = hilbert_dim(N)
+
+    var Liouv = decay_to_zero_dissipator_pauli(N, 0, gamma)
+    Liouv = cleanup_pauli_operator(Liouv, 1.0e-14)
+
+    var rho = make_basis_density_matrix(N, 1)
+    var H = make_zero_hamiltonian(N)
+
+    var jump_ops = [ket0_bra1_matrix()]
+    var gammas = [gamma]
+
+    var err = compare_direct_and_symbolic_rhs(Liouv, rho, H, jump_ops, gammas, d)
+
+    print_validation_result("Dense reference: decay_to_zero_dissipator_pauli", err, tol)
+
+    return err
+}
+
+
+/*
+ * validate_pump_to_one_pauli_against_dense(gamma, tol)
+ *
+ * Compares the fully symbolic Pauli-expanded pump dissipator against the
+ * direct dense GKLS right-hand side for N = 1 and rho = |0><0|.
+ */
+def validate_pump_to_one_pauli_against_dense(real gamma, real tol)
+{
+    var N = 1
+    var d = hilbert_dim(N)
+
+    var Liouv = pump_to_one_dissipator_pauli(N, 0, gamma)
+    Liouv = cleanup_pauli_operator(Liouv, 1.0e-14)
+
+    var rho = make_basis_density_matrix(N, 0)
+    var H = make_zero_hamiltonian(N)
+
+    var jump_ops = [ket1_bra0_matrix()]
+    var gammas = [gamma]
+
+    var err = compare_direct_and_symbolic_rhs(Liouv, rho, H, jump_ops, gammas, d)
+
+    print_validation_result("Dense reference: pump_to_one_dissipator_pauli", err, tol)
+
+    return err
+}
+
+
+/*
+ * validate_z_dephasing_pauli_against_dense(gamma, tol)
+ *
+ * Compares the fully symbolic Pauli-expanded dephasing dissipator against the
+ * direct dense GKLS right-hand side for N = 1 and rho = |+><+|.
+ */
+def validate_z_dephasing_pauli_against_dense(real gamma, real tol)
+{
+    var N = 1
+    var d = hilbert_dim(N)
+
+    var Liouv = z_dephasing_dissipator_pauli(N, 0, gamma)
+    Liouv = cleanup_pauli_operator(Liouv, 1.0e-14)
+
+    // rho = |+><+| = 1/2 [[1, 1], [1, 1]]
+    var rho = matrix([[0.5, 0.5], [0.5, 0.5]], as_complex)
+
+    var H = make_zero_hamiltonian(N)
+
+    var jump_ops = [pauli_z_matrix()]
+    var gammas = [gamma]
+
+    var err = compare_direct_and_symbolic_rhs(Liouv, rho, H, jump_ops, gammas, d)
+
+    print_validation_result("Dense reference: z_dephasing_dissipator_pauli", err, tol)
+
+    return err
+}
+
+
+/*
+ * validate_one_qubit_gkls_pauli_against_dense(omega, gamma, tol)
+ *
+ * Combined one-qubit test using the Pauli-expanded decay dissipator.
+ *
+ * H = omega X,
+ * L = |0><1|.
+ *
+ * We choose rho = |1><1| so that both the Hamiltonian and dissipator
+ * contribute nontrivially.
+ */
+def validate_one_qubit_gkls_pauli_against_dense(real omega, real gamma, real tol)
+{
+    var N = 1
+    var d = hilbert_dim(N)
+
+    var Liouv = coherent_x_term(N, 0, omega)
+    Liouv += decay_to_zero_dissipator_pauli(N, 0, gamma)
+    Liouv = cleanup_pauli_operator(Liouv, 1.0e-14)
+
+    var rho = make_basis_density_matrix(N, 1)
+
+    var H = omega * make_single_qubit_x_matrix()
+
+    var jump_ops = [ket0_bra1_matrix()]
+    var gammas = [gamma]
+
+    var err = compare_direct_and_symbolic_rhs(Liouv, rho, H, jump_ops, gammas, d)
+
+    print_validation_result("Dense reference: one-qubit GKLS Pauli backend", err, tol)
+
+    return err
+}
+
+
+// ============================================================================
+// 6) Dense-reference validation for coherent terms
+// ============================================================================
+
+/*
+ * validate_single_qubit_x_hamiltonian_against_dense(omega, tol)
+ *
+ * Checks the symbolic coherent X Liouvillian against the direct dense
+ * commutator for N = 1.
+ */
+def validate_single_qubit_x_hamiltonian_against_dense(real omega, real tol)
+{
+    var N = 1
+    var d = hilbert_dim(N)
+
+    var Liouv = coherent_x_term(N, 0, omega)
+
+    // A non-stationary test state: rho = |0><0|.
+    var rho = make_basis_density_matrix(N, 0)
+
+    var H = omega * make_single_qubit_x_matrix()
+
+    var jump_ops = []
+    var gammas = []
+
+    var err = compare_direct_and_symbolic_rhs(Liouv, rho, H, jump_ops, gammas, d)
+
+    print_validation_result("Dense reference: coherent X Hamiltonian", err, tol)
+
+    return err
+}
+
+/*
+ * validate_single_qubit_z_hamiltonian_against_dense(omega, tol)
+ *
+ * Checks the symbolic coherent Z Liouvillian against the direct dense
+ * commutator for N = 1.
+ *
+ * We choose rho = |+><+| so the commutator is nonzero.
+ */
+def validate_single_qubit_z_hamiltonian_against_dense(real omega, real tol)
+{
+    var N = 1
+    var d = hilbert_dim(N)
+
+    var Liouv = coherent_z_term(N, 0, omega)
+
+    // rho = |+><+|
+    var rho = matrix([[0.5, 0.5], [0.5, 0.5]], as_complex)
+
+    var H = omega * make_single_qubit_z_matrix()
+
+    var jump_ops = []
+    var gammas = []
+
+    var err = compare_direct_and_symbolic_rhs(Liouv, rho, H, jump_ops, gammas, d)
+
+    print_validation_result("Dense reference: coherent Z Hamiltonian", err, tol)
+
+    return err
+}
+
+
+// ============================================================================
+// 7) Combined one-qubit GKLS validation
+// ============================================================================
+
+/*
+ * validate_one_qubit_gkls_against_dense(omega, gamma, tol)
+ *
+ * Checks a small GKLS model:
+ *
+ *     H = omega X,
+ *     L = |0><1|.
+ *
+ * This validates that coherent and dissipative symbolic pieces combine
+ * correctly.
+ */
+def validate_one_qubit_gkls_against_dense(real omega, real gamma, real tol)
+{
+    var N = 1
+    var d = hilbert_dim(N)
+
+    var Liouv = coherent_x_term(N, 0, omega)
+    Liouv += decay_to_zero_dissipator(N, 0, gamma)
+
+    // Use a coherent initial state to test both Hamiltonian and dissipator.
+    var rho = matrix([[0.5, 0.5], [0.5, 0.5]], as_complex)
+
+    var H = omega * make_single_qubit_x_matrix()
+
+    var jump_ops = [ket0_bra1_matrix()]
+    var gammas = [gamma]
+
+    var err = compare_direct_and_symbolic_rhs(Liouv, rho, H, jump_ops, gammas, d)
+
+    print_validation_result("Dense reference: one-qubit GKLS model", err, tol)
+
+    return err
+}
+
+
+// ============================================================================
+// 8) Symbolic Krylov one-step sanity check
+// ============================================================================
+
+/*
+ * validate_one_step_trace_preservation(gamma, dt, krylov_dim, tol)
+ *
+ * Builds a one-qubit decay Liouvillian, constructs the symbolic Krylov
+ * propagator exp(dt * L), applies one time step, and checks trace preservation.
+ *
+ * This does not construct a dense Liouvillian matrix.
+ */
+def validate_one_step_trace_preservation(
+    real gamma,
+    real dt,
+    integer krylov_dim,
+    real tol
+)
+{
+    var N = 1
+    var dim_vec = liouville_dim(N)
+
+    var Liouv = decay_to_zero_dissipator(N, 0, gamma)
+    var U = make_liouville_expm(Liouv, dim_vec, dt, krylov_dim)
+
+    var rho_vec = make_basis_density_vec(N, 1)
+
+    var trace_bra = make_trace_bra(N)
+    var trace_before = dot(trace_bra, rho_vec)
+
+    rho_vec = U * rho_vec
+
+    var trace_after = dot(trace_bra, rho_vec)
+    var trace_err = abs(real(trace_after - trace_before))
+
+    print("")
+    print("=== Symbolic Krylov one-step trace-preservation check ===")
+    print("trace before = " + trace_before.string())
+    print("trace after  = " + trace_after.string())
+    print("trace error  = " + trace_err.string())
+    print("tolerance    = " + tol.string())
+
+    if (trace_err < tol)
+    {
+        print("PASS")
+    }
+    else
+    {
+        print("FAIL")
+    }
+
+    return trace_err
+}
+
+
+// ============================================================================
+// 9) Run a compact validation suite
+// ============================================================================
+
+/*
+ * run_core_validation_suite()
+ *
+ * Convenience wrapper used by the first example script.
+ */
+def run_core_validation_suite()
+{
+    var tol = 1.0e-10
+
+    var gamma = 1.0
+    var omega = 0.7
+    var dt = 0.01
+    var krylov_dim = 4
+
+    print("")
+    print("============================================================")
+    print("Running symbolic Liouville-space core validation suite")
+    print("============================================================")
+
+    check_decay_to_zero_population_flow(gamma, tol)
+    check_pump_to_one_population_flow(gamma, tol)
+
+    validate_decay_to_zero_against_dense(gamma, tol)
+    validate_pump_to_one_against_dense(gamma, tol)
+    validate_z_dephasing_against_dense(gamma, tol)
+
+    validate_decay_to_zero_pauli_against_dense(gamma, tol)
+    validate_pump_to_one_pauli_against_dense(gamma, tol)
+    validate_z_dephasing_pauli_against_dense(gamma, tol)
+    validate_one_qubit_gkls_pauli_against_dense(omega, gamma, tol)
+
+    validate_single_qubit_x_hamiltonian_against_dense(omega, tol)
+    validate_single_qubit_z_hamiltonian_against_dense(omega, tol)
+
+    validate_one_qubit_gkls_against_dense(omega, gamma, tol)
+
+    validate_one_step_trace_preservation(gamma, dt, krylov_dim, tol)
+
+    print("")
+    print("============================================================")
+    print("Validation suite finished")
+    print("============================================================")
+}
