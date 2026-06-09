@@ -617,8 +617,8 @@ const applyMathToAxis = <
           return richResult.text
         }
       }
+      updatedAxis.axisLabel = axisLabel
     }
-    updatedAxis.axisLabel = axisLabel
     return updatedAxis
   })
   return (Array.isArray(axis) ? updated : updated[0]) as T

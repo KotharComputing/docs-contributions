@@ -1,0 +1,55 @@
+{
+  "name": "kothar-docs",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "docusaurus": "docusaurus",
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "clear": "docusaurus clear",
+    "serve": "docusaurus serve",
+    "typecheck": "tsc"
+  },
+  "dependencies": {
+    "@docusaurus/core": "^3.10.1",
+    "@docusaurus/preset-classic": "^3.10.1",
+    "@kasisoft/remark-autolinker": "^0.2.6",
+    "@mdx-js/react": "^3.1.1",
+    "@radix-ui/react-accordion": "^1.2.12",
+    "clsx": "^2.1.1",
+    "docusaurus-lunr-search": "^3.6.0",
+    "docusaurus-plugin-image-zoom": "^3.0.1",
+    "echarts": "^6.0.0",
+    "lucide-react": "^1.14.0",
+    "motion": "^12.38.0",
+    "ogl": "^1.0.11",
+    "prism-react-renderer": "^2.4.1",
+    "react": "^19.2.6",
+    "react-dom": "^19.2.6",
+    "rehype-katex": "^7.0.1",
+    "remark-math": "^6.0.0"
+  },
+  "devDependencies": {
+    "@docusaurus/module-type-aliases": "^3.10.1",
+    "@docusaurus/tsconfig": "^3.10.1",
+    "@docusaurus/types": "^3.10.1",
+    "baseline-browser-mapping": "^2.10.29",
+    "file-loader": "^6.2.0",
+    "typescript": "^6.0.3"
+  },
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 3 chrome version",
+      "last 3 firefox version",
+      "last 5 safari version"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0"
+  }
+}

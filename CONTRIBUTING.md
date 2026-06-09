@@ -25,6 +25,7 @@ External contributions in this repository must only modify files under `docs/con
 
 - Only files under `docs/contributions/` can be changed.
 - File and folder names inside `docs/contributions/` must be `kebab-case`.
+- Tags in page front matter must match approved labels in `docs/tags.yml`.
 - Pull requests must pass CI (including Docusaurus build and link checks).
 
 ## Content Template
@@ -58,6 +59,7 @@ Use admonitions for warnings, tips, and key details.
 - Docusaurus admonitions
 - Inline and block LaTeX math
 - Images and `.figure` files used by this docs site
+- Approved docs tags from `docs/tags.yml`
 
 ## Review Expectations
 

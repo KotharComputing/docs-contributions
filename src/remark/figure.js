@@ -81,19 +81,26 @@ function buildFigureNode({ url, alt, title, filePath }) {
     type: 'mdxJsxFlowElement',
     name: 'Figure',
     attributes: [
-      { type: 'mdxJsxAttribute', name: 'src', value: requireAttributeValue(relativePath) },
+      {
+        type: 'mdxJsxAttribute',
+        name: 'src',
+        value: requireAttributeValue(relativePath),
+      },
       ...(alt ? [{ type: 'mdxJsxAttribute', name: 'alt', value: alt }] : []),
-      ...(title ? [{ type: 'mdxJsxAttribute', name: 'title', value: title }] : []),
+      ...(title
+        ? [{ type: 'mdxJsxAttribute', name: 'title', value: title }]
+        : []),
     ],
     children: [],
   };
 }
 
 module.exports = function remarkFigure() {
-  return (tree, vfile) => {
+  // async transformer + dynamic import() for ESM-only unist-util-visit-parents v6
+  return async (tree, vfile) => {
     const filePath = vfile.path || '';
 
-    const visitParents = require('unist-util-visit-parents').visitParents;
+    const { visitParents } = await import('unist-util-visit-parents');
 
     visitParents(tree, 'image', (node, ancestors) => {
       if (!isFigureImage(node)) {
@@ -114,7 +121,12 @@ module.exports = function remarkFigure() {
       const parent = ancestors[ancestors.length - 1];
       const grandparent = ancestors[ancestors.length - 2];
 
-      if (parent && parent.type === 'paragraph' && grandparent && Array.isArray(grandparent.children)) {
+      if (
+        parent &&
+        parent.type === 'paragraph' &&
+        grandparent &&
+        Array.isArray(grandparent.children)
+      ) {
         const index = grandparent.children.indexOf(parent);
         if (index !== -1) {
           grandparent.children[index] = figureNode;

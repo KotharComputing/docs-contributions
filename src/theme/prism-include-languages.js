@@ -1,4 +1,5 @@
 import siteConfig from '@generated/docusaurus.config';
+
 export default function prismIncludeLanguages(PrismObject) {
   const {
     themeConfig: {prism},
@@ -14,8 +15,7 @@ export default function prismIncludeLanguages(PrismObject) {
   globalThis.Prism = PrismObject;
   additionalLanguages.forEach((lang) => {
     if (lang === 'aleph') {
-      // eslint-disable-next-line global-require
-      Prism.languages.aleph = Prism.languages.extend('clike', {
+      PrismObject.languages.aleph = PrismObject.languages.extend('clike', {
         'string': {
           pattern: /(^|[^\\])'(?:[^'\\]|\\[\s\S])*'/,
           lookbehind: true,
@@ -33,15 +33,15 @@ export default function prismIncludeLanguages(PrismObject) {
             lookbehind: true
           }
         ],
-        'keyword': /\b(?:auto|break|case|catch|class|continue|def|default|else|finally|for|fun|global|if|include|return|switch|this|try|var|while)\b/,
+        'keyword': /\b(?:after_all|after_each|auto|before_all|before_each|break|case|cases|catch|class|continue|def|default|else|finally|for|fun|global|if|include|options|return|switch|test|test_section|this|try|var|while)\b/,
         'number': [
-          Prism.languages.cpp.number,
+          PrismObject.languages.cpp.number,
           /\b(?:Infinity|NaN)\b/
         ],
         'operator': />>=?|<<=?|\|\||&&|:[:=]?|--|\+\+|[=!<>+\-*/%|&^]=?|[?~]|`[^`\r\n]{1,4}`/,
       });
 
-      Prism.languages.insertBefore('aleph', 'operator', {
+      PrismObject.languages.insertBefore('aleph', 'operator', {
         'parameter-type': {
           // e.g. def foo(int x, Vector y) {...}
           pattern: /([,(]\s*)\w+(?=\s+\w)/,
@@ -50,7 +50,7 @@ export default function prismIncludeLanguages(PrismObject) {
         },
       });
 
-      Prism.languages.insertBefore('aleph', 'string', {
+      PrismObject.languages.insertBefore('aleph', 'string', {
         'string-interpolation': {
           pattern: /(^|[^\\])"(?:[^"$\\]|\\[\s\S]|\$(?!\{)|\$\{(?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*\})*"/,
           lookbehind: true,
@@ -63,7 +63,7 @@ export default function prismIncludeLanguages(PrismObject) {
                 'interpolation-expression': {
                   pattern: /(^\$\{)[\s\S]+(?=\}$)/,
                   lookbehind: true,
-                  inside: Prism.languages.aleph
+                  inside: PrismObject.languages.aleph
                 },
                 'interpolation-punctuation': {
                   pattern: /^\$\{|\}$/,

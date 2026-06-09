@@ -12,6 +12,7 @@ This repository hosts a minimal Docusaurus instance used to preview external con
 
 - Only create or modify content inside `docs/contributions`. Changes outside this folder will be refused.
 - Use kebab-case for all file and folder names to keep URLs consistent.
+- Use approved docs tags from `docs/tags.yml` when adding `tags` front matter. Unknown tags fail the build.
 - You may use Docusaurus admonitions and inline LaTeX math.
 - You may include images and `.figure` files produced by the Aleph Plotting module in the workshop.
 
@@ -22,6 +23,7 @@ If you are new to Docusaurus, start with the official docs: https://docusaurus.i
 - Docs pages live in `docs/contributions` and are written in Markdown or MDX.
 - The first heading (`# Title`) becomes the page title. Docusaurus uses that to build navigation.
 - You can add front matter at the top of a file (between `---` lines) to set metadata like `title` or `sidebar_position`.
+- You can add `tags` front matter, but each tag must exactly match a key in `docs/tags.yml`.
 - Use relative links for local docs pages and place images in the same folder (or a subfolder) to keep paths simple.
 
 ## How To Open A Pull Request On GitHub
