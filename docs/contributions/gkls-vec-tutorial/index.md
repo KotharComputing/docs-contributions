@@ -8,8 +8,8 @@ authors:
     #  email: "carlos.ribeiro@academico.ufpb.br"
 tags:
     - "Open quantum systems & decoherence"
-    - "Quantum master equations"
-    - "Lindblad equations"
+    - "Quantum master equation"
+    - "Lindblad equation"
 
 ---
 
@@ -857,4 +857,3 @@ This tutorial stops at a deliberately clean many-body example, but the same Liou
 - Try a less minimal many-body model, such as boundary-driven XXZ or a $J_1$-$J_2$ XXZ chain. Does the same code organization still make the model easy to build and inspect?
 
 <Authors heading="Documentation Contributors" />
-
