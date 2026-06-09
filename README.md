@@ -52,6 +52,87 @@ If you are new to Docusaurus, start with the official docs: https://docusaurus.i
 
 The site will be available at http://localhost:3000/ by default.
 
+## Dev Container / Codespaces
+
+You can also open this repository in a VS Code Dev Container or GitHub Codespaces. The container uses Node 24 LTS, installs dependencies automatically with `npm ci`, and starts the Docusaurus preview on port 3000.
+
+### Start In VS Code
+
+1. Install Docker Desktop or another Docker-compatible runtime.
+2. Install the VS Code Dev Containers extension.
+3. Open this repository in VS Code.
+4. Run `Dev Containers: Reopen in Container` from the Command Palette.
+5. Wait for the container to install dependencies and start Docusaurus.
+
+The first launch can take a few minutes because the container runs `npm ci` before `npm run start`. When startup finishes, VS Code should open the forwarded preview automatically. If it does not, open http://localhost:3000/.
+
+You can watch startup progress in the VS Code Dev Containers output, or in Docker logs. The site is ready when the logs include:
+
+```text
+[SUCCESS] Docusaurus website is running at: http://localhost:3000/
+```
+
+If the browser opens before the first page responds, wait a little longer for the client build to finish and refresh.
+
+### Start From The CLI
+
+You can use the same container without opening VS Code if you have Docker and the Dev Containers CLI installed:
+
+```sh
+npm install -g @devcontainers/cli
+devcontainer up --workspace-folder .
+```
+
+If port 3000 is already in use on your machine, choose a different host port:
+
+```sh
+KOTHAR_DOCS_HOST_PORT=3001 devcontainer up --workspace-folder .
+```
+
+The `devcontainer up` command prints a `containerId` when the container starts. Use that ID to follow the Docusaurus startup logs:
+
+```sh
+docker logs -f <containerId>
+```
+
+The CLI does not use VS Code's port forwarding, so the container publishes Docusaurus directly to `127.0.0.1:3000` by default, or to the `KOTHAR_DOCS_HOST_PORT` value if you set one. You can confirm the host port mapping with:
+
+```sh
+docker port <containerId> 3000/tcp
+```
+
+After the logs show the Docusaurus success message, open http://localhost:3000/, or the custom `KOTHAR_DOCS_HOST_PORT` URL if you changed it, such as http://localhost:3001/. If the first request hangs, wait a little longer for the client build to finish and refresh.
+
+To run commands inside the container:
+
+```sh
+devcontainer exec --workspace-folder . npm run typecheck
+devcontainer exec --workspace-folder . npm run build
+```
+
+### Stop The Dev Container
+
+In VS Code, run `Dev Containers: Reopen Folder Locally` or close the remote window. The container is configured to stop when the devcontainer session shuts down.
+
+From the CLI, stop the compose project from the repository root:
+
+```sh
+docker compose -f .devcontainer/docker-compose.yml -p docs-contributions_devcontainer down
+```
+
+If you only have the `containerId`, you can also stop that container directly:
+
+```sh
+docker stop <containerId>
+```
+
+Before opening a pull request, still run the same validation checks used by CI:
+
+1. Typecheck the site:
+   `npm run typecheck`
+2. Build the site:
+   `npm run build`
+
 ## Repository Layout
 
 - `docs/contributions`: The only folder for external content.

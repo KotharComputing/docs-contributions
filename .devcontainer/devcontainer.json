@@ -1,0 +1,21 @@
+{
+  "name": "Kothar Docs Contributions",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "docs",
+  "workspaceFolder": "/workspaces/docs-contributions",
+  "remoteUser": "node",
+  "shutdownAction": "stopCompose",
+  "forwardPorts": [
+    3000
+  ],
+  "portsAttributes": {
+    "3000": {
+      "label": "Kothar Docs preview",
+      "onAutoForward": "openPreview"
+    }
+  },
+  "remoteEnv": {
+    "CHOKIDAR_USEPOLLING": "true",
+    "WATCHPACK_POLLING": "true"
+  }
+}

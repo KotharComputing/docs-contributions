@@ -1,0 +1,24 @@
+services:
+  docs:
+    image: mcr.microsoft.com/devcontainers/javascript-node:24-bookworm
+    init: true
+    user: root
+    working_dir: /workspaces/docs-contributions
+    command: >
+      sh -lc "chown -R node:node node_modules build .docusaurus
+      && exec su node -c 'npm ci && exec npm run start -- --host 0.0.0.0'"
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
+      WATCHPACK_POLLING: "true"
+    ports:
+      - "127.0.0.1:${KOTHAR_DOCS_HOST_PORT:-3000}:3000"
+    volumes:
+      - ..:/workspaces/docs-contributions:cached
+      - node_modules:/workspaces/docs-contributions/node_modules
+      - build:/workspaces/docs-contributions/build
+      - docusaurus:/workspaces/docs-contributions/.docusaurus
+
+volumes:
+  node_modules:
+  build:
+  docusaurus:
