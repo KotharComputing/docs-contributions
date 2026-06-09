@@ -480,16 +480,6 @@ html[data-theme='dark'] #search_input_react::placeholder {
   }
 }
 
-.changelog-sidebarSticky {
-  position: sticky !important;
-  top: calc(var(--ifm-navbar-height) + 16px);
-  align-self: start;
-  max-height: calc(100vh - var(--ifm-navbar-height) - 32px);
-  overflow: auto;
-  z-index: 1;
-  background: inherit;
-}
-
 .pagination-nav {
   display: none !important;
 }
