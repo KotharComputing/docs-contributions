@@ -3,6 +3,7 @@
   "dockerComposeFile": "docker-compose.yml",
   "service": "docs",
   "workspaceFolder": "/workspaces/docs-contributions",
+  "remoteUser": "node",
   "shutdownAction": "stopCompose",
   "forwardPorts": [
     3000

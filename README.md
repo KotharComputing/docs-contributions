@@ -83,19 +83,25 @@ npm install -g @devcontainers/cli
 devcontainer up --workspace-folder .
 ```
 
+If port 3000 is already in use on your machine, choose a different host port:
+
+```sh
+KOTHAR_DOCS_HOST_PORT=3001 devcontainer up --workspace-folder .
+```
+
 The `devcontainer up` command prints a `containerId` when the container starts. Use that ID to follow the Docusaurus startup logs:
 
 ```sh
 docker logs -f <containerId>
 ```
 
-The CLI does not use VS Code's port forwarding, so the container publishes Docusaurus directly to `127.0.0.1:3000`. You can confirm the host port mapping with:
+The CLI does not use VS Code's port forwarding, so the container publishes Docusaurus directly to `127.0.0.1:3000` by default, or to the `KOTHAR_DOCS_HOST_PORT` value if you set one. You can confirm the host port mapping with:
 
 ```sh
 docker port <containerId> 3000/tcp
 ```
 
-After the logs show the Docusaurus success message, open http://localhost:3000/. If the first request hangs, wait a little longer for the client build to finish and refresh.
+After the logs show the Docusaurus success message, open http://localhost:3000/, or the custom `KOTHAR_DOCS_HOST_PORT` URL if you changed it, such as http://localhost:3001/. If the first request hangs, wait a little longer for the client build to finish and refresh.
 
 To run commands inside the container:
 
