@@ -1,0 +1,143 @@
+.kothar-spark {
+  display: block;
+  width: 100%;
+  margin: 1.25rem 0;
+  padding: 1rem;
+  border: 1px solid rgba(107, 196, 255, 0.18);
+  border-radius: 8px;
+  background:
+    linear-gradient(180deg, rgba(9, 28, 42, 0.92), rgba(5, 20, 31, 0.96)),
+    var(--ifm-background-surface-color);
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+  transition:
+    border-color 150ms ease,
+    background-color 150ms ease,
+    transform 150ms ease;
+}
+
+.kothar-spark:hover,
+.kothar-spark:focus,
+.kothar-spark:active {
+  color: var(--ifm-font-color-base);
+  text-decoration: none;
+}
+
+.kothar-spark:hover {
+  border-color: rgba(107, 196, 255, 0.42);
+  transform: translateY(-1px);
+}
+
+.kothar-spark:focus-visible {
+  outline: 2px solid var(--ifm-color-primary-light);
+  outline-offset: 3px;
+}
+
+.kothar-spark-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.kothar-spark-title-group {
+  display: grid;
+  min-width: 0;
+  gap: 0.05rem;
+}
+
+.kothar-spark-kicker {
+  font-size: 0.75rem;
+  line-height: 1rem;
+  color: var(--ifm-font-color-secondary);
+}
+
+.kothar-spark-title {
+  overflow-wrap: anywhere;
+  font-size: 0.72rem;
+  line-height: 1rem;
+  font-family: var(--ifm-font-family-monospace);
+  font-weight: 500;
+  color: var(--ifm-font-color-secondary);
+}
+
+.kothar-spark-external-icon {
+  margin-left: auto;
+  flex: 0 0 auto;
+  color: var(--ifm-font-color-secondary);
+}
+
+.kothar-spark-description {
+  margin: 0.85rem 0 0;
+  color: #d9dde3;
+  font-size: 0.94rem;
+  line-height: 1.55;
+}
+
+.kothar-spark-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem 1rem;
+  margin-top: 0.9rem;
+  color: var(--ifm-font-color-secondary);
+  font-size: 0.78rem;
+  line-height: 1.2rem;
+}
+
+.kothar-spark-meta span:not(:last-child)::after {
+  content: '';
+}
+
+.kothar-spark-files {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.95rem;
+  padding-top: 0.95rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.kothar-spark-file {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.45rem;
+  color: #c6ccd4;
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.78rem;
+  line-height: 1.25rem;
+}
+
+.kothar-spark-file svg {
+  flex: 0 0 auto;
+  color: var(--ifm-color-primary-lighter);
+}
+
+.kothar-spark-file span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kothar-spark-file-overflow {
+  font-family: var(--ifm-font-family-base);
+  color: var(--ifm-font-color-secondary);
+}
+
+.kothar-spark-action {
+  display: block;
+  margin-top: 0.9rem;
+  color: #c7eeff;
+  font-size: 0.8rem;
+  line-height: 1.25rem;
+}
+
+@media (max-width: 540px) {
+  .kothar-spark {
+    padding: 0.9rem;
+  }
+
+  .kothar-spark-meta {
+    gap: 0.35rem 0.7rem;
+  }
+}

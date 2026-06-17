@@ -177,13 +177,9 @@ The previous section gave us the conceptual move: once the density matrix is vec
 
 For that reason, the code is organized in layers. The reusable machinery lives in a core file, and the actual examples are kept as separate executable scripts.
 
-The main files used in this tutorial are:
+The main files used in this tutorial are in the following spark:
 
-- [`liouville-core.aleph`](./liouville-core.aleph)
-- [`liouville-validation.aleph`](./liouville-validation.aleph)
-- [`01-single-qubit-validation.aleph`](./01-single-qubit-validation.aleph)
-- [`02-single-qubit-krylov-evolution.aleph`](./02-single-qubit-krylov-evolution.aleph)
-- [`03-stationary-closed-chain-open-dynamics.aleph`](./03-stationary-closed-chain-open-dynamics.aleph)
+<KotharSpark id="spk_unn2jta1kx0mnkd1" />
 
 The idea here is simple: first build and validate the Liouville-space machinery on small systems, then use the same machinery in the propagation examples.
 
@@ -212,13 +208,13 @@ liouville-validation.aleph
 01-single-qubit-validation.aleph
 ```
 
-The role of these files is not to be large or physically impressive, but only make sure the convention is correct before we trust the many-body examples. They do that by comparing the symbolic Liouville-space construction against direct dense GKLS calculations in one-qubit cases.
+The role of these files is not to be large or physically impressive, but to make sure the convention is correct before we trust the many-body examples. They do that by comparing the symbolic Liouville-space construction against direct dense GKLS calculations in one-qubit cases.
 
 After that, the first propagation examples are:
 
 ```text
-02_single_qubit_krylov_evolution.aleph
-03_stationary_closed_chain_open_dynamics.aleph
+02-single-qubit-krylov-evolution.aleph
+03-stationary-closed-chain-open-dynamics.aleph
 ```
 
 While the single-qubit file is the clean pedagogical example, the many-body file is where the same vectorization strategy is used on a larger open spin-chain problem.
@@ -504,7 +500,7 @@ A successful run should report `PASS` throughout the validation suite. Once that
 Once the Liouville-space construction has been validated, we can use it for actual time evolution. The first propagation example is kept deliberately small:
 
 ```text
-02_single_qubit_krylov_evolution.aleph
+02-single-qubit-krylov-evolution.aleph
 ```
 
 It describes a single driven dissipative qubit with $H=\omega X$ and a relaxation channel $L=|0\rangle\langle 1|$.
@@ -619,7 +615,7 @@ In this section, we move to a spin chain with exact Liouville-space propagation.
 The corresponding file is:
 
 ```text
-03_stationary_closed_chain_open_dynamics.aleph
+03-stationary-closed-chain-open-dynamics.aleph
 ```
 
 ### Model

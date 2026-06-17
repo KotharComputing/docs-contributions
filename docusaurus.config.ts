@@ -5,6 +5,7 @@ import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import { remarkAutolinker } from '@kasisoft/remark-autolinker';
 import remarkFigure from './src/remark/figure';
+import kotharSparksPlugin from './src/plugins/kothar-sparks';
 
 const htmlEntityMap: Record<string, string> = {
   '&lt;': '<',
@@ -149,6 +150,7 @@ const config: Config = {
   ],
 
   plugins: [
+    kotharSparksPlugin,
     'docusaurus-lunr-search',
     'docusaurus-plugin-image-zoom',
     function figureAssetsPlugin() {

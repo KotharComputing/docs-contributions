@@ -10,6 +10,7 @@ import {
   AccordionContent,
 } from '@site/src/components/Accordion/Accordion.jsx';
 import Figure from '@site/src/components/Figure/Figure.jsx';
+import KotharSpark from '@site/src/components/KotharSpark/KotharSpark.jsx';
 
 const StateHighlight = ({ children }) => (
   <Highlight type='state'>{children}</Highlight>
@@ -37,4 +38,5 @@ export default {
   AccordionTrigger,
   AccordionContent,
   Figure,
+  KotharSpark,
 };
