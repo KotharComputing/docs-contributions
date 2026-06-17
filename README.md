@@ -15,6 +15,7 @@ This repository hosts a minimal Docusaurus instance used to preview external con
 - Use approved docs tags from `docs/tags.yml` when adding `tags` front matter. Unknown tags fail the build.
 - You may use Docusaurus admonitions and inline LaTeX math.
 - You may include images and `.figure` files produced by the Aleph Plotting module in the workshop.
+- You may embed Kothar Sparks for artifacts readers should be able to view and import into their own workspace.
 
 ## Docusaurus Basics
 
@@ -25,6 +26,22 @@ If you are new to Docusaurus, start with the official docs: https://docusaurus.i
 - You can add front matter at the top of a file (between `---` lines) to set metadata like `title` or `sidebar_position`.
 - You can add `tags` front matter, but each tag must exactly match a key in `docs/tags.yml`.
 - Use relative links for local docs pages and place images in the same folder (or a subfolder) to keep paths simple.
+
+## Kothar Sparks
+
+Use a Kothar Spark when you want to share artifacts that readers can easily view and import into their own workspace. Good candidates include source files, runnable examples, generated artifacts, notebooks, datasets, and supplemental project files.
+
+Small code snippets that explain a concept should stay directly in the page. Use a spark when the artifact is something readers should open as a file, inspect as a bundle, or import into their own workspace.
+
+Embed a spark in any Markdown or MDX contribution page with the `KotharSpark` component:
+
+```mdx
+<KotharSpark id="spk_unn2jta1kx0mnkd1" />
+```
+
+Replace the ID with the spark you want to share. The rendered card links to the hosted spark and shows its description, owner, creation date, file count, total size, and up to 10 file names.
+
+The production build fetches spark metadata when you run `npm run build`. Invalid, private, or inaccessible spark IDs fail the build, so run the build before opening a pull request.
 
 ## How To Open A Pull Request On GitHub
 

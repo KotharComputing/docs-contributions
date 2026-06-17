@@ -46,6 +46,8 @@ A short intro that explains what this page helps the reader do.
 
 Explain one concept at a time with concrete examples.
 
+<KotharSpark id="spk_unn2jta1kx0mnkd1" />
+
 :::note
 Use admonitions for warnings, tips, and key details.
 :::
@@ -53,13 +55,18 @@ Use admonitions for warnings, tips, and key details.
 <Authors heading="Documentation Contributors" />
 ```
 
+Replace the spark ID with your own, or remove the spark line if your contribution does not include external artifacts.
+
 ## Supported Content
 
 - Markdown / MDX pages
 - Docusaurus admonitions
 - Inline and block LaTeX math
 - Images and `.figure` files used by this docs site
+- Kothar Sparks for artifacts readers should be able to view and import into their own workspace
 - Approved docs tags from `docs/tags.yml`
+
+If you want to share source files, runnable examples, generated artifacts, notebooks, datasets, or supplemental project files, prefer a Kothar Spark over pasting large artifacts directly into the page. Small code snippets that explain the text should stay directly in the page.
 
 ## Review Expectations
 
